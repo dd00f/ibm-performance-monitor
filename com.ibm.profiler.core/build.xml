@@ -1,0 +1,53 @@
+
+
+<project default="copy">
+
+	<property name="core.file" value="./target/com.ibm.profiler.core-1.0.0.0-SNAPSHOT.jar">
+	</property>
+	<property name="jdbc.file" value="../com.ibm.profiler.jdbc/target/com.ibm.profiler.jdbc-1.0.0.0-SNAPSHOT.jar">
+	</property>
+	
+    <property name="core.src.file" value="./target/com.ibm.profiler.core-1.0.0.0-SNAPSHOT.jar">
+    </property>
+    <property name="jdbc.src.file" value="../com.ibm.profiler.jdbc/target/com.ibm.profiler.jdbc-1.0.0.0-SNAPSHOT-sources.jar">
+    </property>
+	
+	<target name="copy">
+
+		<copy file="${core.file}" tofile="../CCEventRepository/WebContent/WEB-INF/lib/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${core.file}" tofile="../CCEventRepository/work/WEB-INF/lib/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${core.file}" tofile="../CCWebClient/WebContent/WEB-INF/lib/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${core.file}" tofile="../ControlCenter/performance/lib/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		<!--
+		<copy file="${core.file}" tofile="../ControlCenter/thirdparty/10x_Jars/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${core.file}" tofile="../ControlCenter/thirdparty/profiler_jars/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${core.file}" tofile="../ControlCenter/dist/SterlingCommerce/ControlCenter/lib/10xJars/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${core.file}" tofile="../ControlCenter/dist/SterlingCommerce/ControlCenter/lib/thirdparty/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${core.file}" tofile="../slc/tools/profiler_jars/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+		-->
+
+		
+	    <copy file="${core.file}" tofile="../ccenter-tools/com.ibm.profiler-1.0.0.0_IBM/lib/com.ibm.profiler.core-1.0.0.0.jar" overwrite="true"/>
+	    <copy file="${core.file}" tofile="../ccenter-tools/com.ibm.profiler-1.0.0.0_IBM/com.ibm.profiler.core-1.0.0.0-sources.jar" overwrite="true"/>
+
+		<copy file="${core.file}" tofile="../DummyMonitoring/com.ibm.profiler.core-1.0.0.0-SNAPSHOT.jar" overwrite="true"/>
+
+
+		<copy file="${jdbc.file}" tofile="../CCEventRepository/WebContent/WEB-INF/lib/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${jdbc.file}" tofile="../CCWebClient/WebContent/WEB-INF/lib/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${jdbc.file}" tofile="../CCEventRepository/work/WEB-INF/lib/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+
+		<!--
+		<copy file="${jdbc.file}" tofile="../ControlCenter/dist/SterlingCommerce/ControlCenter/lib/10xJars/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+		<copy file="${jdbc.file}" tofile="../ControlCenter/dist/SterlingCommerce/ControlCenter/lib/thirdparty/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${jdbc.file}" tofile="../ControlCenter/thirdparty/10x_Jars/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+		-->
+		<copy file="${jdbc.file}" tofile="../ccenter-tools/com.ibm.profiler-1.0.0.0_IBM/lib/com.ibm.profiler.jdbc-1.0.0.0.jar" overwrite="true"/>
+        <copy file="${jdbc.src.file}" tofile="../ccenter-tools/com.ibm.profiler-1.0.0.0_IBM/com.ibm.profiler.jdbc-1.0.0.0-sources.jar" overwrite="true"/>
+
+		
+	</target>
+
+
+</project>
+

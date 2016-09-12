@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<!--
+ =================================================================
+  Licensed Materials - Property of IBM
+
+  WebSphere Commerce
+
+  (C) Copyright IBM Corp. 2015 All Rights Reserved.
+
+  US Government Users Restricted Rights - Use, duplication or
+  disclosure restricted by GSA ADP Schedule Contract with
+  IBM Corp.
+ =================================================================
+-->
+
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      
+       function drawChart() {
+       drawChartTime();
+       drawChartCount();
+       }
+      
+            function drawChartTime() {
+        var data = google.visualization.arrayToDataTable([
+
+%%RESPONSE_TIME_TREND%%
+
+        ]);
+
+        var options = {
+          title: 'Response Time Trend',
+          hAxis: {title: 'Time Flow in %%TIME_UNIT%%',  titleTextStyle: {color: '#333'}},
+          vAxis: {title: 'milliseconds', minValue: 0},
+          enableInteractivity: true,
+          explorer: {  actions: ['dragToZoom', 'rightClickToReset'] },
+          series: {
+            0: { lineDashStyle: [6, 4] },
+            1: { lineDashStyle: [6, 4] },
+            2: {  },
+          },
+		  colors: ['limegreen', 'darkmagenta', 'darkblue'],
+		  crosshair: { trigger: 'both' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('responseTimeDiv'));
+        chart.draw(data, options);
+      }
+      
+      function drawChartCount() {
+        var data = google.visualization.arrayToDataTable([
+
+%%CALL_COUNT_TREND%%
+
+        ]);
+
+        var options = {
+          title: 'Call Count Trend',
+          hAxis: {title: 'Time Flow in %%TIME_UNIT%%',  titleTextStyle: {color: '#333'}},
+          vAxis: {minValue: 0},
+          enableInteractivity: true,
+          explorer: {  actions: ['dragToZoom', 'rightClickToReset'] },
+		  colors: ['darkblue', 'blue', 'darkblue', 'yellow', 'gray'],
+		  crosshair: { trigger: 'both' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('callCountDiv'));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body style="width: 100%; margin: 0;">
+  <div style="display: table; width:100%; height:99%;">
+  			<div style="display: table-row; width:100%;">
+				<div style="height:20px;
+					border: black;
+					border-style: solid;
+					padding: 5px;
+					border-width: 2px;
+					background-color: lightskyblue;
+					font-weight: bold;">
+					
+					<div style="float:left;font-size: large;color: darkblue;padding-right: 20px;">
+					Operation Performance Trend Report
+					</div> 
+					<div style="float:left; padding:3px;padding-left: 20px;">
+					(<a href="../report-operations.html">Operation Performance Report</a>)
+					(<a href="../report-execution.html">Execution Performance Report</a>)
+					</div> 
+				</div>
+			</div>
+  </div>
+  <div style="display:table;margin-left: 20px;margin-right: 20px;">  
+  <h1 style="word-break: break-all;" >%%OPERATION_NAME%%</h1>
+  To zoom in on a chart, use left-click &amp; drag. Right click on the chart to reset zooming.
+    <div id="responseTimeDiv" style="width: 900px; height: 500px;"></div>
+    <div id="callCountDiv" style="width: 900px; height: 500px;"></div>
+    </div>
+  </body>
+</html>

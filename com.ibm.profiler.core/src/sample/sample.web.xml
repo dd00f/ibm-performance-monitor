@@ -1,0 +1,19 @@
+<web-app>
+	<filter>
+		<filter-name>ServletProfilingFilter</filter-name>
+		<filter-class>com.ibm.profiler.servlet.ServletProfilingFilter
+		</filter-class>
+		<init-param>
+			<param-name>ServletName</param-name>
+			<param-value>ServletProfilingFilter</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>ServletProfilingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+		<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+</web-app>

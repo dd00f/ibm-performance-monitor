@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<!--
+ =================================================================
+  Licensed Materials - Property of IBM
+
+  WebSphere Commerce
+
+  (C) Copyright IBM Corp. 2014 All Rights Reserved.
+
+  US Government Users Restricted Rights - Use, duplication or
+  disclosure restricted by GSA ADP Schedule Contract with
+  IBM Corp.
+ =================================================================
+-->
+<html dir="ltr">
+
+    <head>
+
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dijit/themes/claro/claro.css">
+        <style type="text/css">
+            body, html { font-family:helvetica,arial,sans-serif; font-size:90%; }
+        </style>
+        <style type="text/css">
+            @import "http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojox/grid/resources/Grid.css";
+            @import "http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojox/grid/resources/claroGrid.css";
+			html, body { width: 100%; height: 100%; margin: 0; }
+
+        </style>
+
+    </head>
+
+    <body class="claro ">
+		<div style="display: table; width:100%; height:99%;">
+			<div style="display: table-row; width:100%;">
+				<div style="height:20px;
+					border: black;
+					border-style: solid;
+					padding: 5px;
+					border-width: 2px;
+					background-color: lightskyblue;
+					font-weight: bold;">
+					
+					<div style="float:left;font-size: large;color: darkblue;padding-right: 20px;">
+						Execution Performance Report
+					</div> 
+					<!--
+					<div style="float:left;padding:3px">
+					Layout Selection :
+					</div> 
+					<div style="float:left">
+						<select id="layoutSelect" onchange="updateLayoutSelection()">
+							<option  value="basic" onclick="switchLayout('basic');">Basic</option ></br>
+							<option  value="cache" onclick="switchLayout('cache');">Cache</option ></br>
+							<option  value="cachePotential" onclick="switchLayout('cachePotential');">Cache Potential</option ></br>
+							<option  value="all" onclick="switchLayout('all');">All</option ></br>
+						</select>
+					</div> 
+					-->	
+					<div style="float:left; padding-left: 20px;">
+						<form title="Filter applied to the operation name. Use '*' to match any character and '?' to match a single character."> 
+							<button id="filterButton">Filter</button>
+							<input id="opNameFilter" value="*" type="text" name="operationName"></input>
+						</form>				
+					</div> 
+					<div style="float:left; padding:3px;padding-left: 20px;">
+					(<a href="report-execution.csv">CSV Version</a>)
+					</div> 		
+					<div style="float:left; padding:3px;padding-left: 20px;">
+					(<a href="report-operations.html">Operation Performance Report</a>)
+					</div> 						
+				</div>
+			</div>
+			<div id="gridContainer4" 
+				style="width: 100%; height: 100%; display: table-row"
+			>
+
+			</div>
+		</div>
+    </body>
+
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js"></script>
+
+    <script type="text/javascript">
+	
+		document.getElementById("opNameFilter").value =  getUrlParameter("operationName", "*");
+	
+		String.prototype.startsWith = function(str){
+			return (this.match("^"+str)==str)
+		}
+
+		String.prototype.endsWith = function(str)
+		{return (this.match(str+"$")==str)}
+		
+
+
+		function trimLeadZero(value){
+			if( value == null )
+			{
+				return null;
+			}
+			while (value.startsWith("0"))
+			{
+				value = value.substr(1, value.length);
+			}
+			if( value.length == 0)
+			{
+				return "0";
+			}
+			return value;
+		}
+		
+		function formatMs(value){
+			return value + " ms"
+		}
+		
+		function formatOperationStackLink(value){
+			return '(<a href="./stack/' + formatFileName(value) + '.xml">stack</a>)';
+		}		
+		function formatOperationCallerLink(value){
+			return '(<a href="./caller/' + formatFileName(value) + '.xml">callers</a>)';
+		}	
+		function formatLongText(value){
+			escapedCommas = value.replace(/&amp;com;/g,",") ;
+			return '<div style=" word-break: break-all;">' + escapedCommas + '</div>';
+		}
+		
+		 function fetchFailed(error, request) {
+			alert("lookup failed.");
+			alert(error);
+		}
+		
+		var resultingEntry;
+		
+		function formatExecStackLink(value){
+			store4.fetch({
+                query: {
+                    IDENTIFIER:value
+                },
+                onComplete: function(items, request){
+					resultingEntry=items;
+				},
+                onError: fetchFailed,
+            });
+		
+			fileName = value+"." + store4.getValue(resultingEntry[0], "OPERATION_NAME");
+		
+			return '(<a href="./execution/' + formatFileName(fileName) + '.xml">stack</a>)';
+		}	
+		
+		function formatFileName(value){
+			return value.replace(/&lt;/g, "<").substring(0, 150).replace(/[^A-Za-z0-9 ]/g, ".");
+		}		
+
+		
+		function formatPercentage(value){
+			return value + " %"
+		}		
+
+		function compareFloat(a,b){
+			if( a == null )
+			{
+				if( b== null )
+				{
+					return 0;
+				}
+				return -1;
+			}
+			if( b == null )
+			{
+				return 1;
+			}
+			firstInt = parseFloat(trimLeadZero(a));
+			secondInt = parseFloat(trimLeadZero(b));
+			returnValue = firstInt - secondInt;
+			return returnValue;
+		}
+
+		function compareLocalString(a,b){
+			return a.localCompare(b);
+		}
+
+		dojo.require("dojox.grid.DataGrid");
+		dojo.require("dojox.data.CsvStore");
+
+		var grid4;
+		var store4;
+		var layoutBasic;
+		var layoutCache;
+		var layoutCachePotential;
+		
+		var layoutByName
+
+
+		function parseFetchResult(items, request)
+		{
+
+		}
+		
+		function updateLayoutSelection() {
+			switchLayout(document.getElementById("layoutSelect").value);
+		}
+		
+		function filterOpName() {
+			opNameFilter = document.getElementById("opNameFilter").value;
+			grid4.setQuery({OPERATION_NAME: opNameFilter});
+			grid4.update();
+			grid4.resize();			
+		}
+
+		function switchLayout(layoutName) {
+			var selectedLayout = layoutByName[layoutName];
+			grid4.set('structure', selectedLayout );
+			grid4.update();
+			grid4.resize();			
+		}
+		
+		function getUrlParameter( name, defaultValue )
+		{
+		  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+		  var regexS = "[\\?&]"+name+"=([^&#]*)";
+		  var regex = new RegExp( regexS );
+		  var results = regex.exec( window.location.href );
+		  if( results == null )
+			return defaultValue;
+		  else
+			return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+		
+
+
+        function loadEverything() {
+		  
+            // our test data store for this example:
+			var csvData = "%%CSV_DATA%%";
+			
+
+
+            store4 = new dojox.data.CsvStore({
+			data: csvData
+            //    url: 'report-operation-cache.csv'
+            });
+
+			store4.comparatorMap = {};
+			store4.comparatorMap["DURATION_MS"] = compareFloat;
+			store4.comparatorMap["START_TIME_MS"] = compareFloat;
+			store4.comparatorMap["STOP_TIME_MS"] = compareFloat;
+			store4.comparatorMap["RESULT_SIZE"] = compareFloat;
+			store4.comparatorMap["IDENTIFIER"] = compareFloat;
+
+			
+			var items = store4.fetch({onComplete: parseFetchResult});
+			
+			var opName = {
+                field: 'OPERATION_NAME',
+                name: '<div title="Operation name.">Operation Name</div>',
+                width: '400px'
+				,formatter: formatLongText
+            };
+			
+			var stackLink = {	field: 'OPERATION_NAME'
+                ,name: '<div title="Operation sample execution stack report.">Sample Stacks Link</div>'
+                ,width: '55px'
+                ,formatter: formatOperationStackLink
+			} ;
+			
+			var callerLink = {	field: 'OPERATION_NAME'
+                ,name: '<div title="Report of all the operations who call this one.">Callers Report Link</div>'
+                ,width: '55px'
+                ,formatter: formatOperationCallerLink
+			} ;
+			
+			var duration = {	field: 'DURATION_MS'
+                ,name: '<div title="Execution duration.">Duration</div>'
+                ,width: '110px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+			} ;
+			
+			var startTime = {	field: 'START_TIME_MS'
+                ,name: '<div title="Execution start timestamp. Relative to other time stamps.">Start Time</div>'
+                ,width: '110px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+			}  
+			
+			var stopTime = {	field: 'STOP_TIME_MS'
+                ,name: '<div title="Execution stop timestamp. Relative to other time stamps.">Stop Time</div>'
+                ,width: '110px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+			} ;
+			
+			var resultSize = {	field: 'RESULT_SIZE'
+                ,name: '<div title="Size of the response in bytes.">Response Size</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                // ,formatter: formatMs
+			} ;
+			
+			var timeSum = {	field: 'KEY_VALUE'
+                ,name: '<div title="Key and value combination that were used to execution this operation.">Key and Values</div>'
+                ,width: '375px'
+                ,formatter: formatLongText
+                ,styles: 'text-align: right;'
+			}	;
+			
+			var identifier = {	field: 'IDENTIFIER'
+                ,name: '<div title="Unique identifier of this execution.">Identifier</div>'
+                ,width: '150px'
+                ,styles: 'text-align: right;'
+                //,formatter: formatMs
+			};
+			
+			var execStackLink = {	field: 'IDENTIFIER'
+                ,name: '<div title="Execution stack report link.">Execution Stack Link</div>'
+                ,width: '75px'
+                ,formatter: formatExecStackLink
+			};
+			
+			
+            var allLayout = [
+				{
+					noscroll: true,
+					cells: [opName]
+				},
+				{
+					cells: [
+						execStackLink
+						,duration
+						,startTime 
+						,stopTime
+						,resultSize
+						,timeSum
+						,identifier	 ]
+				}
+            ];
+			
+			layoutByName = {all:allLayout}
+			
+			filterValue = document.getElementById("opNameFilter").value;
+			
+
+
+
+            // create a new grid:
+            grid4 = new dojox.grid.DataGrid({
+                query: {
+                    OPERATION_NAME: filterValue
+                },
+                store: store4,
+                clientSort: true,
+				// hides the horizontal scroll bar.
+				// autoHeight: true,
+                rowSelector: '20px',
+                selectable: true,
+                structure: allLayout,
+				rowsPerPage: 100,
+				keepRows: 10000
+            },
+            document.createElement('div'));
+
+            // append the new grid to the div "gridContainer4":
+            dojo.byId("gridContainer4").appendChild(grid4.domNode);
+
+            // Call startup, in order to render the grid:
+            grid4.startup();
+			resizeGrid();
+        }
+
+		function resizeGrid() {
+		  grid4.update();
+		  grid4.resize();
+		  // dojoGrid = document.getElementById("dojox_grid_DataGrid_0");
+		  //dojoGrid.style.height = "100%";
+		  //dojoGrid.style.width = "100%";
+		  // dojoGrid.style.display = "table";
+		  
+		}
+
+		dojo.addOnLoad(function() {		
+			dojo.connect(window, "onresize", resizeGrid);
+			loadEverything();	
+			
+		});
+		
+    </script>
+
+</html>			

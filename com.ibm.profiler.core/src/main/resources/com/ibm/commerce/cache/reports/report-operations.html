@@ -1,0 +1,509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<!--
+ =================================================================
+  Licensed Materials - Property of IBM
+
+  WebSphere Commerce
+
+  (C) Copyright IBM Corp. 2014 All Rights Reserved.
+
+  US Government Users Restricted Rights - Use, duplication or
+  disclosure restricted by GSA ADP Schedule Contract with
+  IBM Corp.
+ =================================================================
+-->
+<html dir="ltr">
+
+    <head>
+
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dijit/themes/claro/claro.css">
+        <style type="text/css">
+            body, html { font-family:helvetica,arial,sans-serif; font-size:90%; }
+        </style>
+        <style type="text/css">
+            @import "http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojox/grid/resources/Grid.css";
+            @import "http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojox/grid/resources/claroGrid.css";
+			html, body { width: 100%; height: 100%; margin: 0; }
+
+        </style>
+
+    </head>
+
+    <body class="claro ">
+		<div style="display: table; width:100%; height:99%;">
+			<div style="display: table-row; width:100%;">
+				<div style="height:20px;
+					border: black;
+					border-style: solid;
+					padding: 5px;
+					border-width: 2px;
+					background-color: lightskyblue;
+					font-weight: bold;">
+					
+					<div style="float:left;font-size: large;color: darkblue;padding-right: 20px;">
+					Operation Performance Report
+					</div> 
+					<div style="float:left;padding:3px">
+					Layout Selection :
+					</div> 
+					<div style="float:left">
+						<select id="layoutSelect" onchange="updateLayoutSelection()">
+							<option  value="basic" onclick="switchLayout('basic');">Basic</option >
+							<option  value="cache" onclick="switchLayout('cache');">Cache</option >
+							<option  value="cachePotential" onclick="switchLayout('cachePotential');">Cache Potential</option >
+							<option  value="all" onclick="switchLayout('all');">All</option >
+						</select>
+					</div> 
+					<div style="float:left; padding-left: 20px;">
+						<form title="Filter applied to the operation name. Use '*' to match any character and '?' to match a single character."> 
+							<button id="filterButton">Filter</button>
+							<input id="opNameFilter" value="*" type="text" name="operationName"></input>
+						</form>	
+					</div> 					
+					<div style="float:left; padding:3px;padding-left: 20px;">
+					(<a href="report-operations.csv">Basic CSV Version</a>)
+					(<a href="report-operation-cache.csv">Full CSV Version</a>)
+					(<a href="report-execution.html">Execution Performance Report</a>)
+					</div> 
+				</div>
+			</div>
+			<div id="gridContainer4" 
+				style="width: 100%; height: 100%; display: table-row"
+			>
+
+			</div>
+		</div>
+    </body>
+
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js"></script>
+
+    <script type="text/javascript">
+    
+		document.getElementById("opNameFilter").value =  getUrlParameter("operationName", "*");
+	    
+		String.prototype.startsWith = function(str){
+			return (this.match("^"+str)==str)
+		}
+
+		String.prototype.endsWith = function(str)
+		{return (this.match(str+"$")==str)}
+		
+
+
+		function trimLeadZero(value){
+			if( value == null )
+			{
+				return null;
+			}
+			while (value.startsWith("0"))
+			{
+				value = value.substr(1, value.length);
+			}
+			if( value.length == 0)
+			{
+				return "0";
+			}
+			return value;
+		}
+		
+		function formatMs(value){
+			return value + " ms"
+		}
+		
+		function formatOperationStackLink(value){
+			return '(<a href="./stack/' + formatFileName(value) + '.xml">stack</a>)';
+		}		
+		function formatOperationCallerLink(value){
+			return '(<a href="./caller/' + formatFileName(value) + '.xml">callers</a>)';
+		}	
+		function formatOperationTrendLink(value){
+			return '(<a href="./trend/' + formatFileName(value) + '.html">trend</a>)';
+		}			
+		function formatLongText(value){
+			escapedCommas = value.replace(/&amp;com;/g,",") ;
+			return '<div style=" word-break: break-all;">' + escapedCommas + '</div>';
+		}
+		function formatFileName(value){
+			return value.replace(/&lt;/g, "<").substring(0, 150).replace(/[^A-Za-z0-9 ]/g, ".");
+		}		
+
+		
+		function formatPercentage(value){
+			return value + " %"
+		}		
+
+		function compareFloat(a,b){
+			if( a == null )
+			{
+				if( b== null )
+				{
+					return 0;
+				}
+				return -1;
+			}
+			if( b == null )
+			{
+				return 1;
+			}
+			firstInt = parseFloat(trimLeadZero(a));
+			secondInt = parseFloat(trimLeadZero(b));
+			returnValue = firstInt - secondInt;
+			return returnValue;
+		}
+
+		function compareLocalString(a,b){
+			return a.localCompare(b);
+		}
+
+		dojo.require("dojox.grid.DataGrid");
+		dojo.require("dojox.data.CsvStore");
+
+		var grid4;
+		var store4;
+		var layoutBasic;
+		var layoutCache;
+		var layoutCachePotential;
+		
+		var layoutByName
+
+
+		function parseFetchResult(items, request)
+		{
+
+		}
+		
+		function updateLayoutSelection() {
+			switchLayout(document.getElementById("layoutSelect").value);
+		}
+		
+		function filterOpName() {
+			opNameFilter = document.getElementById("opNameFilter").value;
+			grid4.setQuery({OPERATION_NAME: opNameFilter});
+			grid4.update();
+			grid4.resize();			
+		}
+		
+		function switchLayout(layoutName) {
+			var selectedLayout = layoutByName[layoutName];
+			grid4.set('structure', selectedLayout );
+			grid4.update();
+			grid4.resize();			
+		}
+		
+		function getUrlParameter( name, defaultValue )
+		{
+		  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+		  var regexS = "[\\?&]"+name+"=([^&#]*)";
+		  var regex = new RegExp( regexS );
+		  var results = regex.exec( window.location.href );
+		  if( results == null )
+			return defaultValue;
+		  else
+			return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+
+        function loadEverything() {
+		  
+            // our test data store for this example:
+			var csvData = "%%CSV_DATA%%";
+			
+
+
+            store4 = new dojox.data.CsvStore({
+			data: csvData
+            //    url: 'report-operation-cache.csv'
+            });
+
+			store4.comparatorMap = {};
+			store4.comparatorMap["MS_SAVED_PER_BYTE"] = compareFloat;
+			store4.comparatorMap["CACHE_ALLOCATION_IN_BYTES"] = compareFloat;
+			store4.comparatorMap["AVERAGE_CALL_DURATION_IN_MS"] = compareFloat;
+			store4.comparatorMap["AVERAGE_CACHE_HIT_DURATION_IN_MS"] = compareFloat;
+			store4.comparatorMap["AVERAGE_CACHE_MISS_DURATION_IN_MS"] = compareFloat;
+			store4.comparatorMap["AVERAGE_RESULT_SIZE_IN_BYTES"] = compareFloat;
+			store4.comparatorMap["CUMULATIVE_EXECUTION_TIME_MS"] = compareFloat;
+			store4.comparatorMap["MAX_CACHE_ALLOCATION_SIZE_IN_BYTES"] = compareFloat;
+			store4.comparatorMap["MAX_CACHE_BENEFIT_MS"] = compareFloat;
+			store4.comparatorMap["UNIQUE_CACHE_ENTRY_COUNT"] = compareFloat;
+			store4.comparatorMap["MAX_THEORIC_CACHE_HIT_COUNT"] = compareFloat;
+			store4.comparatorMap["REAL_CACHE_HIT_COUNT"] = compareFloat;
+			store4.comparatorMap["REAL_CACHE_ENABLED_COUNT"] = compareFloat;
+			store4.comparatorMap["CACHE_ENABLED_CALL_PERCENTAGE"] = compareFloat;
+			store4.comparatorMap["MAX_THEORIC_CACHE_HIT_PERCENTAGE"] = compareFloat;
+			store4.comparatorMap["REAL_CACHE_HIT_PERCENTAGE"] = compareFloat;
+			store4.comparatorMap["CACHE_EFFECTIVENESS_VS_THEORY_PERCENTAGE"] = compareFloat;
+			store4.comparatorMap["CALL_COUNT"] = compareFloat;
+
+			
+			var items = store4.fetch({onComplete: parseFetchResult});
+			
+            var opName = {
+                field: 'OPERATION_NAME',
+                name: '<div title="Operation name.">Operation Name</div>',
+                width: '350px'
+                ,formatter: formatLongText
+            };
+            
+            var stackLink = {   field: 'OPERATION_NAME'
+                ,name: '<div title="Operation sample execution stack report.">Sample Stacks Link</div>'
+                ,width: '55px'
+                ,formatter: formatOperationStackLink
+            } ;
+            
+            var callerLink = {  field: 'OPERATION_NAME'
+                ,name: '<div title="Report of all the operations who call this one.">Callers Report Link</div>'
+                ,width: '55px'
+                ,formatter: formatOperationCallerLink
+            } ;
+            
+            var trendLink = {   field: 'OPERATION_NAME'
+                ,name: '<div title="Operation response time & size trend report.">Trend Report Link</div>'
+                ,width: '55px'
+                ,formatter: formatOperationTrendLink
+            } ;         
+            
+            var callCount = {   field: 'CALL_COUNT'
+                ,name: '<div title="Number of times this operation was executed.">Call Count</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                // ,formatter: formatMs
+            } ;
+            
+            var avgDuration = { field: 'AVERAGE_CALL_DURATION_IN_MS'
+                ,name: '<div title="Average duration it took to execute this operation.">Average Duration</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            }  
+            
+            var avgDurationHit = {  field: 'AVERAGE_CACHE_HIT_DURATION_IN_MS'
+                ,name: '<div title="Average duration it took to execute this operation during a cache hit.">Average Cache Hit Duration</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            } ;
+            
+            var avgDurationMiss = { field: 'AVERAGE_CACHE_MISS_DURATION_IN_MS'
+                ,name: '<div title="Average duration it took to execute this operation during a cache miss.">Average Cache Miss Duration</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            } ;
+            
+            var timeSum = { field: 'CUMULATIVE_EXECUTION_TIME_MS'
+                ,name: '<div title="Total amount of time spent by the system by all the executions of this operation.">Cumulative Execution Time</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            }   ;
+            
+            var resultSize = {  field: 'AVERAGE_RESULT_SIZE_IN_BYTES'
+                ,name: '<div title="Average size of the response.">Average Response Size</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                //,formatter: formatMs
+            };
+            
+            var cacheAllocation = { field: 'CACHE_ALLOCATION_IN_BYTES'
+                ,name: '<div title="Recommended cache allocation size for this operation based on the amount of memory allocated during the report generation.">Recommended Cache Size</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                // ,formatter: formatMs
+            }   ;
+            
+            var maxCacheSize = {    field: 'MAX_CACHE_ALLOCATION_SIZE_IN_BYTES'
+                ,name: '<div title="Maximum number of bytes the cache may take if all unique execution results are cached.">Maximum Cache Size</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                // ,formatter: formatMs
+            };
+            
+            var uniqueEntryCount = {    field: 'UNIQUE_CACHE_ENTRY_COUNT'
+                ,name: '<div title="Number of unique cache entries produced by this operation.">Unique Cache Entry Count</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                // ,formatter: formatMs
+            };
+            
+            var msSavedPerByte = {  field: 'MS_SAVED_PER_BYTE'
+                ,name: '<div title="Theoretical execution time saved for every byte of cache allocation on this operation. Assuming an instantaneous execution time on cache hit.">Time saved per byte</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            }   
+            
+            var maxCacheBenefits = {    field: 'MAX_CACHE_BENEFIT_MS'
+                ,name: '<div title="Maximum amount of time the system would have saved if the cache for this operation was perfect. This assumes the cache is instantaneous on cache hit and that it is big enough to contain all the execution results as well ">Maximum Time Saved By Cache</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatMs
+            }   ;
+            
+            var maxCacheHit = { field: 'MAX_THEORIC_CACHE_HIT_COUNT'
+                ,name: '<div title="Maximum number of operation execution that could have resulted in a cache hit in theory. Assuming a perfect cache that stores all the results and that never expires.">Maximum Theoric Cache Hit Count</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                //,formatter: formatMs
+            }   
+            
+            var realCacheHit = {    field: 'REAL_CACHE_HIT_COUNT'
+                ,name: '<div title="Number of operation executions that actually resulted in a cache hit.">Real Cache Hit Count</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                //,formatter: formatMs
+            }   ;
+            
+            var realCacheEnabled = {    field: 'REAL_CACHE_ENABLED_COUNT'
+                ,name: '<div title="Number of operation executions where cache was enabled.">Real Cache Enabled Call Count</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                //,formatter: formatMs
+            }   ;
+            
+            var cacheEnabledPercentage = {  field: 'CACHE_ENABLED_CALL_PERCENTAGE'
+                ,name: '<div title="Percentage of the operation execution where cache was enabled.">Real Cache Enabled Call Percentage</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatPercentage
+            }   ;
+            
+            var maxCacheHitPercentage = {   field: 'MAX_THEORIC_CACHE_HIT_PERCENTAGE'
+                ,name: '<div title="Percentage of the operation execution that could have resulted in a cache hit in theory. Assuming a perfect cache that stores all the results and that never expires.">Maximum Theoric Cache Hit Percentage</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatPercentage
+            }   ;
+            
+            var realCacheHitPercentage = {  field: 'REAL_CACHE_HIT_PERCENTAGE'
+                ,name: '<div title="Percentage of the operation execution that resulted in a cache hit.">Real Cache Hit Percentage</div>'
+                ,width: '75px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatPercentage
+            }   ;
+            
+            var cacheTheoryVsPractice = {   field: 'CACHE_EFFECTIVENESS_VS_THEORY_PERCENTAGE'
+                ,name: '<div title="Efficiency percentage of the real cache compared to what it could achieve in theory. '+
+                '100% means the cache works as efficiently as possible.'+
+                ' A number above 100% indicates the cache might be returning a cache hit when it should return a miss or that '+
+                'the metrics captured during this report didn&#39;t include the initial cache population.'+
+                ' A number below 100% indicates that the cache didn&#39;t result in the maximum number of cache hits. '+
+                'This can be due to cache invalidation and evictions which aren&#39;t monitored in this report. '+
+                '">Cache effectiveness vs theory</div>'
+                ,width: '100px'
+                ,styles: 'text-align: right;'
+                ,formatter: formatPercentage
+            };
+
+            var allLayout = [{noscroll: true,cells: [opName]},{cells: [
+				stackLink
+				,callerLink		
+				,trendLink
+				,callCount
+				,maxCacheHit
+				,realCacheHit
+				,realCacheEnabled
+				,uniqueEntryCount
+				,avgDuration     
+				,avgDurationHit 
+				,avgDurationMiss
+				,timeSum	
+				,maxCacheBenefits
+				,resultSize
+				,cacheAllocation
+				,maxCacheSize
+				,msSavedPerByte
+				,cacheEnabledPercentage
+				,maxCacheHitPercentage
+				,realCacheHitPercentage
+				,cacheTheoryVsPractice		
+            ]}];
+			
+			var basicLayout = [{noscroll: true,cells: [opName]},{cells: [
+				stackLink
+				,callerLink		
+				,trendLink
+				,callCount
+				,avgDuration     
+				,timeSum	
+				,resultSize
+             ]}];
+			
+			var cacheLayout = [{noscroll: true,cells: [opName]},{cells: [
+				stackLink
+				,callerLink		
+				,callCount
+				,realCacheHit
+				,realCacheEnabled
+				,avgDuration     
+				,avgDurationHit 
+				,avgDurationMiss
+				,timeSum	
+				,resultSize
+				,cacheEnabledPercentage
+				,realCacheHitPercentage
+            ]}];
+			
+			var cachePotentialLayout = [{noscroll: true,cells: [opName]},{cells: [
+				stackLink
+				,callerLink		
+				,callCount
+				,maxCacheHit
+				,uniqueEntryCount
+				,cacheAllocation
+				,maxCacheSize
+				,msSavedPerByte
+				,maxCacheBenefits
+				,maxCacheHitPercentage
+				,cacheTheoryVsPractice		
+             ]}];				
+			
+			layoutByName = {all:allLayout, basic:basicLayout, cache:cacheLayout, cachePotential:cachePotentialLayout}
+
+			filterValue = document.getElementById("opNameFilter").value;
+
+            // create a new grid:
+            grid4 = new dojox.grid.DataGrid({
+                query: {
+                    OPERATION_NAME: filterValue
+                },
+                store: store4,
+                clientSort: true,
+				// hides the horizontal scroll bar.
+				// autoHeight: true,
+                rowSelector: '20px',
+                selectable: true,
+                structure: basicLayout,
+				rowsPerPage: 100,
+				keepRows: 10000
+            },
+            document.createElement('div'));
+
+            // append the new grid to the div "gridContainer4":
+            dojo.byId("gridContainer4").appendChild(grid4.domNode);
+
+            // Call startup, in order to render the grid:
+            grid4.startup();
+			resizeGrid();
+        }
+
+		function resizeGrid() {
+		  grid4.update();
+		  grid4.resize();
+		  // dojoGrid = document.getElementById("dojox_grid_DataGrid_0");
+		  //dojoGrid.style.height = "100%";
+		  //dojoGrid.style.width = "100%";
+		  // dojoGrid.style.display = "table";
+		  
+		}
+
+		dojo.addOnLoad(function() {		
+			dojo.connect(window, "onresize", resizeGrid);
+			loadEverything();	
+			
+		});
+		
+    </script>
+
+</html>			
