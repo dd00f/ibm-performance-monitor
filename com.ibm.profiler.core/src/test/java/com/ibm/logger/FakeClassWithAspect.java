@@ -35,11 +35,13 @@ public class FakeClassWithAspect {
         return "Hello world2";
     }
 
-    @Print( PrintMode.MASK )
+    @com.ibm.logger.trace.Print( PrintMode.MASK )
     @Dummy
     public String methodWithTrace( @Print( PrintMode.FULL ) String arg1, @Print( PrintMode.HASH ) String arg2, @Print( PrintMode.MASK ) int arg3, @Print( PrintMode.NO_DISPLAY ) int[] arg4, @Dummy String filter ) {
         return "Hello world3";
     }
+    
+    
 
     public String methodWithServiceLogger() {
         return "Hello to you too";

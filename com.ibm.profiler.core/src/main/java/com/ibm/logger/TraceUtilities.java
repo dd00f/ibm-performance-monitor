@@ -156,7 +156,7 @@ public class TraceUtilities {
      * @param secure Is the method secure ? If so, both the arguments and the return value will be masked.
      * @param logger The logger to use.
      * @param operationNamePrefix the name of the layer being measured, appended as a prefix to the operation name.
-     * @param printReturnValue option to print the returned value.f
+     * @param printReturnValue option to print the returned value.
      * @return The join point returned value.
      * @throws Throwable If the join point throws an exception.
      */
