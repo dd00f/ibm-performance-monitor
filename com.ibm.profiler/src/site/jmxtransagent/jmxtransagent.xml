@@ -1,0 +1,73 @@
+<jmxtrans-agent>
+    <queries>
+        <!-- OS -->
+        <query objectName="java.lang:type=OperatingSystem" attribute="SystemLoadAverage" resultAlias="os.systemLoadAverage"/>
+
+        <!-- JVM -->
+        <query objectName="java.lang:type=Memory" attribute="HeapMemoryUsage" key="used"
+               resultAlias="jvm.heapMemoryUsage.used"/>
+        <query objectName="java.lang:type=Memory" attribute="HeapMemoryUsage" key="committed"
+               resultAlias="jvm.heapMemoryUsage.committed"/>
+        <query objectName="java.lang:type=Memory" attribute="NonHeapMemoryUsage" key="used"
+               resultAlias="jvm.nonHeapMemoryUsage.used"/>
+        <query objectName="java.lang:type=Memory" attribute="NonHeapMemoryUsage" key="committed"
+               resultAlias="jvm.nonHeapMemoryUsage.committed"/>
+        <query objectName="java.lang:type=ClassLoading" attribute="LoadedClassCount" resultAlias="jvm.loadedClasses"/>
+        <query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>
+        <query objectName="java.lang:type=GarbageCollector,name=*" attribute="CollectionCount"/>
+        <query objectName="java.lang:type=GarbageCollector,name=*" attribute="CollectionTime"/>
+        
+        <!-- JDBC Sample profiler -->
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TotalLogEntry" attribute="CallCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TotalLogEntry" attribute="ErrorCallCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TotalLogEntry" attribute="TotalDuration"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TotalLogEntry" attribute="TotalResponseSize"/>
+        
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="AverageDuration"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="MinimumDuration"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="MaximumDuration"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="AverageResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="MinimumResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="MaximumResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="CallCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="ErrorCallCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="ErrorCallPercentage"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheEnabledCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheEnabledPercentage"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheHitCount"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheHitPercentage"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="TotalDuration"/>
+        <query objectName="com.ibm.profiler:ID=JDBC_All_Operations,interval=*,MetricType=TimeIntervalLogEntry" attribute="TotalResponseSize"/>
+
+
+        <!-- Servlet Entry Sample profiler -->
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TotalLogEntry" attribute="CallCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TotalLogEntry" attribute="ErrorCallCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TotalLogEntry" attribute="TotalDuration"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TotalLogEntry" attribute="TotalResponseSize"/>
+        
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="AverageDuration"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="MinimumDuration"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="MaximumDuration"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="AverageResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="MinimumResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="MaximumResponseSize"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="CallCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="ErrorCallCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="ErrorCallPercentage"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheEnabledCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheEnabledPercentage"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheHitCount"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="CacheHitPercentage"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="TotalDuration"/>
+        <query objectName="com.ibm.profiler:ID=&quot;Servlet : Request*&quot;,interval=*,MetricType=TimeIntervalLogEntry" attribute="TotalResponseSize"/>
+
+
+    </queries>
+    <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
+        <host>mygraphite.server.com</host>
+        <port>2003</port>
+        <namePrefix>server.SERVERNAME.app.APPNAME.</namePrefix>
+    </outputWriter>
+    <collectIntervalInSeconds>5</collectIntervalInSeconds>
+</jmxtrans-agent>
