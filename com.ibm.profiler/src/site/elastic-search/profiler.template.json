@@ -1,0 +1,152 @@
+{
+  "mappings": {
+    "_default_": {
+      "_all": {
+        "enabled": true,
+        "norms": {
+          "enabled": false
+        }
+      },
+      "dynamic_templates": [
+        {
+          "template1": {
+            "mapping": {
+              "doc_values": true,
+              "ignore_above": 1024,
+              "index": "not_analyzed",
+              "type": "{dynamic_type}"
+            },
+            "match": "*"
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+
+            "operation": {
+              "index": "not_analyzed",
+              "type": "string"
+            },
+            "application": {
+              "index": "not_analyzed",
+              "type": "string"
+            },
+	        "host": {
+	          "type": "string",
+	          "index": "not_analyzed"
+	        },
+	        "shortHost": {
+	          "type": "string",
+	          "index": "not_analyzed"
+	        },
+	        "application": {
+	          "type": "string",
+	          "index": "not_analyzed"
+	        },  	        
+            "callCount": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "averageDurationMs": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "minimumDurationMs": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "maximumDurationMs": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "totalDurationMs": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "averageSize": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "maximumSize": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "totalSize": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheEnabledCount": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheHitCount": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheHitCount": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "errorCount": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "callCountRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "averageDurationMsRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "minimumDurationMsRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "maximumDurationMsRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "totalDurationMsRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "averageSizeRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "maximumSizeRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "totalSizeRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheEnabledCountRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheHitCountRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "cacheHitCountRecent": {
+              "doc_values": "true",
+              "type": "float"
+            },
+            "errorCountRecent": {
+              "doc_values": "true",
+              "type": "float"
+            }            
+          }
+
+    }
+  },
+  "settings": {
+    "index.refresh_interval": "5s"
+  },
+  "template": "profiler-*"
+}

@@ -1,0 +1,49 @@
+
+filter {
+
+	if [type] == "myapp_metrics" {
+		mutate{
+			add_tag => [ "Metric" ]
+		}
+		mutate {
+			add_field => { "application" => "myapp" }
+		}		
+	}
+
+	if "Metric" in [tags] {
+	
+		grok {
+			match => {"source"  => ".*metrics-(?<dateTime>[0-9]{1,}-[0-9]{1,}-[0-9]{1,}T[0-9]{1,}-[0-9]{1,}-[0-9]{1,})Z\.csv" }
+		}
+		
+		if "_grokparsefailure" not in [tags] {
+			date {
+				match => [ "dateTime", "YYYY-MM-dd'T'HH-mm-ss" ]
+				remove_field => ["dateTime"]
+				timezone => "UTC"
+			}
+		}
+
+		split { 
+			field => "message"
+		}
+
+		# ignore title lines
+		if [message] =~ "Name\,Number of calls\,Average" {
+			drop { }
+		}
+		
+		grok {
+			match => {"message"  => "(?<operation>[^,]{1,}),%{NUMBER:callCount:int},%{NUMBER:averageDurationMs:float},%{NUMBER:minimumDurationMs:float},%{NUMBER:maximumDurationMs:float},%{NUMBER:totalDurationMs:float},%{NUMBER:averageSize:float},%{NUMBER:maximumSize:float},%{NUMBER:totalSize:float},%{NUMBER:cacheEnabledCount:int},%{NUMBER:cacheHitCount:int},%{NUMBER:errorCount:int},%{NUMBER:callCountRecent:int},%{NUMBER:averageDurationMsRecent:float},%{NUMBER:minimumDurationMsRecent:float},%{NUMBER:maximumDurationMsRecent:float},%{NUMBER:totalDurationMsRecent:float},%{NUMBER:averageSizeRecent:float},%{NUMBER:maximumSizeRecent:float},%{NUMBER:totalSizeRecent:float},%{NUMBER:cacheEnabledCountRecent:int},%{NUMBER:cacheHitCountRecent:int},%{NUMBER:errorCountRecent:int}" }
+			remove_field => ["message","logLevel","loggerName","threadName","threadId","count","fields","offset"]
+		}
+		
+		# skip metrics that haven't changed since the last time we gathered them
+		if [callCountRecent] == "0" {
+			drop { }
+		}
+		
+	}
+
+
+}

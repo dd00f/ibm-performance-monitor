@@ -1,0 +1,15 @@
+
+filebeat:
+  prospectors:
+    -
+      paths:
+        - /myapp/logs/performance-metrics-*.csv
+      encoding: utf-8
+      input_type: log
+      document_type: myapp_metrics
+      scan_frequency: 5s
+      clean_removed: true
+      close_removed: true
+      max_bytes: 2000000
+      #tail_files: false
+
