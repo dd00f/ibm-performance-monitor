@@ -47,7 +47,9 @@ public final class JdbcProfiler {
 
 
 
-    /**
+    public static final String JDBC_ALL_OPERATIONS = "JDBC_All_Operations";
+
+	/**
 	 * IBM Copyright notice field.
 	 */
 	public static final String COPYRIGHT = com.ibm.commerce.copyright.IBMCopyright.SHORT_COPYRIGHT;
@@ -94,14 +96,38 @@ public final class JdbcProfiler {
 	public static final String STATEMENT = "statement";
     /** operation type constant */
     public static final String TRANSACTION_ID = "transactionId";
-	private static final JdbcEventsThreadLocal EVENTS = new JdbcEventsThreadLocal();
+
+	/**
+	 * Each thread contains a list of all the JDBC events that occurred after
+	 * the last commit/rollback Those events are sent to the listeners if
+	 * eventListeningEnabled is set to true. This isn't used if
+	 * eventListeningEnabled is set to false.
+	 */
+    private static final JdbcEventsThreadLocal EVENTS = new JdbcEventsThreadLocal();
 
 	private static final JdbcEventThreadLocal JDBC_EVENT = new JdbcEventThreadLocal();
 
+	/**
+	 * Thread local map where the key is the combination of
+	 * "operation"+"objectref" and the value is the operation start time in
+	 * nanoseconds as long.
+	 */
 	private static final OperationMapThreadLocal OPERATION_MAP = new OperationMapThreadLocal();
 
 	private static final SequenceThreadLocal SEQUENCE = new SequenceThreadLocal();
+	
+	protected static List<JdbcEvent> getPendingEvents() {
+		return EVENTS.get();
+	}
+	
+	protected static Map<String, JdbcEvent> getPendingJdbcEvents() {
+		return JDBC_EVENT.get();
+	}
 
+	protected static Map<String, Long> getPendingOperations() {
+		return OPERATION_MAP.get();
+	}
+	
 	/**
 	 * 
 	 * getInstance
@@ -193,10 +219,29 @@ public final class JdbcProfiler {
 					LOG.fine("Transaction completion time " + operationTime);
 				}
 				JdbcEventManager.notifyListeners(EVENTS.getEvents());
-				EVENTS.clear();
+				clearPendingEvents();
 			} else if (OP_ROLLBACK.equals(operation)) {
                 SEQUENCE.set(Integer.valueOf(0));
-				EVENTS.clear();
+				clearPendingEvents();
+			}
+		}
+	}
+
+	public void clearPendingEvents() {
+		EVENTS.get().clear();
+		OPERATION_MAP.get().clear();
+		
+		// force end the pending events, even if we are still reading their
+		// result set.
+		// this is done in case anyone forgets to close their result set &
+		// prepared statement.
+		Map<String, JdbcEvent> map = JDBC_EVENT.get();
+		Set<String> keySet = map.keySet();
+		if (keySet.size() > 0) {
+			ArrayList<String> keyList = new ArrayList<String>();
+			keyList.addAll(keySet);
+			for (String eventRef : keyList) {
+				addRowsRead(1, eventRef, true);
 			}
 		}
 	}
@@ -288,16 +333,19 @@ public final class JdbcProfiler {
 	 */
 	public void addRowsRead(int rows, String objRef, boolean success) {
 		if (profilingEnabled) {
-			JdbcEvent event = getJdbcEvent(objRef);
-			event.setRowsRead(Integer.valueOf(rows));
-			if (event.getSequence() == -1) {
-				// result set was already closed. Ignore the 2nd close call.
-				// new Exception("What is this?").printStackTrace();
+			JdbcEvent event = JDBC_EVENT.get().get(objRef);
+			if( event != null ) {
+				event.setRowsRead(Integer.valueOf(rows));
+				if (event.getSequence() == -1) {
+					// result set was already closed. Ignore the 2nd close call.
+					// new Exception("What is this?").printStackTrace();
+				}
+				else {
+					logEvent(event, success);
+				}
+				removeAllObjectReferences(objRef);
+				
 			}
-			else {
-				logEvent(event, success);
-			}
-			removeAllObjectReferences(objRef);
 		}
 	}
 
@@ -328,7 +376,6 @@ public final class JdbcProfiler {
 		
 		if (isSelectStatement(operationName)) {
 			asList = getOrderedParameterKeyValueArray(event.getParameters());
-			
 			MetricFileLoader.addJdbcParameterSubstitution(operationName, asList);
 		} else {
 			// hide all the parameters for create/update/delete operations
@@ -346,8 +393,8 @@ public final class JdbcProfiler {
 		// asList.add(uniqueParameterName);
 		// }
 
-		String parameterizedSql = MetricFileLoader.substituteJdbcParameters(operationName);
-		metric.startOperation("JDBC : " + parameterizedSql, false);
+		String metricOperationName = adjustJdbcOperationName(operationName);
+		metric.startOperation(metricOperationName, false);
 		metric.setKeyValuePairList(asList);
 		
 		// JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
@@ -387,8 +434,14 @@ public final class JdbcProfiler {
 		JdbcLogger.LOG_GATHERER.gatherMetric(metric, true);
 
 		// increase metrics of all JDBC operations put together.
-		metric.setOperationName("JDBC_All_Operations");
+		metric.setOperationName(JDBC_ALL_OPERATIONS);
 		PerformanceLogger.increase(metric);
+	}
+
+	public String adjustJdbcOperationName(String operationName) {
+		String parameterizedSql = MetricFileLoader.substituteJdbcParameters(operationName);
+		String metricOperationName = "JDBC : " + parameterizedSql;
+		return metricOperationName;
 	}
 
     private static final Pattern SELECT_PATTERN = Pattern.compile("[ ]*?select .*", Pattern.CASE_INSENSITIVE);
@@ -545,7 +598,7 @@ public final class JdbcProfiler {
 	 * @param enabled
 	 */
 	public static void setProfilingEnabled(boolean enabled) {
-		EVENTS.clear();
+		getInstance().clearPendingEvents();
 		profilingEnabled = enabled;
 	}
 
@@ -629,12 +682,5 @@ public final class JdbcProfiler {
 			return events.toArray(new JdbcEvent[events.size()]);
 		}
 
-		/**
-		 * 
-		 * clear
-		 */
-		public void clear() {
-			super.get().clear();
-		}
 	}
 }

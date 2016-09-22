@@ -74,7 +74,7 @@ public class WrappedResultSet implements ResultSet {
 	 * @return the wrapped result set
 	 */
 	public static ResultSet wrapResultSet(ResultSet resultSet,
-			String currentRef, JdbcEvent jdbcEvent) {
+			String currentRef, JdbcEvent jdbcEvent, WrappedStatement statement) {
 		ResultSet rslt;
 		if (JdbcLogger.isResultSetSizeMeasured()) {
 			rslt = new WrappedCalculatedResultSet(resultSet, currentRef,
@@ -82,6 +82,8 @@ public class WrappedResultSet implements ResultSet {
 		} else {
 			rslt = new WrappedResultSet(resultSet, currentRef, jdbcEvent);
 		}
+
+		statement.addPendingResultSet( rslt );
 		return rslt;
 	}
 

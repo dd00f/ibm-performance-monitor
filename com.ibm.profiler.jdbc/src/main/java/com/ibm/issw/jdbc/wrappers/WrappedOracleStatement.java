@@ -126,8 +126,9 @@ public class WrappedOracleStatement extends WrappedStatement implements
 	protected ResultSet wrapResultSet(JdbcEvent jdbcEvent,
 			ResultSet executeQuery, String ref) {
 		if (executeQuery instanceof OracleResultSet) {
-			return WrappedOracleStatement.wrapOracleResultSet(
-					(OracleResultSet) executeQuery, ref, jdbcEvent);
+			ResultSet wrapOracleResultSet = WrappedOracleStatement.wrapOracleResultSet(
+					(OracleResultSet) executeQuery, ref, jdbcEvent, this);
+			return wrapOracleResultSet;
 		}
 
 		return super.wrapResultSet(jdbcEvent, executeQuery, ref);
@@ -143,7 +144,7 @@ public class WrappedOracleStatement extends WrappedStatement implements
 	 * @return the wrapped result set
 	 */
 	public static ResultSet wrapOracleResultSet(OracleResultSet resultSet,
-			String currentRef, JdbcEvent jdbcEvent) {
+			String currentRef, JdbcEvent jdbcEvent, WrappedStatement statement) {
 		ResultSet rslt;
 		if (JdbcLogger.isResultSetSizeMeasured()) {
 			rslt = new WrappedOracleCalculatedResultSet(resultSet, currentRef,
@@ -151,6 +152,8 @@ public class WrappedOracleStatement extends WrappedStatement implements
 		} else {
 			rslt = new WrappedOracleResultSet(resultSet, currentRef, jdbcEvent);
 		}
+		
+		statement.addPendingResultSet(rslt);
 		return rslt;
 	}
 

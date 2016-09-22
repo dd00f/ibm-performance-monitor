@@ -293,6 +293,7 @@ public class WrappedConnection implements Connection {
         try
         {
             this.realConnection.close();
+            JdbcProfiler.getInstance().clearPendingEvents();
         }
         finally
         {

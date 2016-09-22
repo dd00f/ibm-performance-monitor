@@ -77,7 +77,7 @@ public class WrappedSQLServerCallableStatement extends WrappedCallableStatement 
     		ResultSet executeQuery, String ref) {
         if (executeQuery instanceof ISQLServerResultSet)
         {
-            return WrappedSQLServerStatement.wrapSqlServerResultSet((ISQLServerResultSet) executeQuery, ref, jdbcEvent);
+            return WrappedSQLServerStatement.wrapSqlServerResultSet((ISQLServerResultSet) executeQuery, ref, jdbcEvent, this);
         }
 
         return super.wrapResultSet(jdbcEvent, executeQuery, ref);

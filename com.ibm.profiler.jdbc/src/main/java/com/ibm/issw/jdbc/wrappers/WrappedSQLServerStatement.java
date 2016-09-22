@@ -44,7 +44,7 @@ public class WrappedSQLServerStatement extends WrappedStatement implements ISQLS
     {
         if (executeQuery instanceof ISQLServerResultSet)
         {
-            return wrapSqlServerResultSet((ISQLServerResultSet) executeQuery, ref, jdbcEvent);
+            return wrapSqlServerResultSet((ISQLServerResultSet) executeQuery, ref, jdbcEvent, this);
         }
 
         return super.wrapResultSet(jdbcEvent, executeQuery, ref);
@@ -59,7 +59,7 @@ public class WrappedSQLServerStatement extends WrappedStatement implements ISQLS
      * @return the wrapped result set
      */
     public static ResultSet wrapSqlServerResultSet(ISQLServerResultSet resultSet,
-            String currentRef, JdbcEvent jdbcEvent) {
+            String currentRef, JdbcEvent jdbcEvent, WrappedStatement statement) {
         ResultSet rslt;
         if (JdbcLogger.isResultSetSizeMeasured()) {
             rslt = new WrappedCalculatedSQLServerResultSet(resultSet, currentRef,
@@ -67,6 +67,7 @@ public class WrappedSQLServerStatement extends WrappedStatement implements ISQLS
         } else {
             rslt = new WrappedSQLServerResultSet(resultSet, currentRef, jdbcEvent);
         }
+        statement.addPendingResultSet(rslt);
         return rslt;
     }
 }

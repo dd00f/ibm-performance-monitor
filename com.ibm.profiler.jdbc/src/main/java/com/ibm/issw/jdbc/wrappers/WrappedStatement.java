@@ -65,6 +65,8 @@ public class WrappedStatement implements Statement {
 	protected String transaction;
 	
 	protected final Connection connection;
+	
+	protected List<ResultSet> pendingResultSets = new ArrayList<ResultSet>();
 
 	public WrappedStatement(Statement statement, String reference, String transaction, Connection connection) {
 		this.stmt = statement;
@@ -88,34 +90,41 @@ public class WrappedStatement implements Statement {
 	@Override
     public final ResultSet executeQuery(String sql) throws SQLException {
 		profileSqlStatement(sql);
-		JdbcProfiler.getInstance().start(JdbcProfiler.OP_EXECUTE_QUERY, this.ref);
+		JdbcProfiler.getInstance().start(JdbcProfiler.OP_EXECUTE_QUERY,
+				this.ref);
 		JdbcEvent jdbcEvent = JdbcProfiler.getInstance().getJdbcEvent(ref);
 
 		ResultSet result = null;
 		ResultSet rslt = null;
 		boolean success = false;
 		try {
-		result = this.stmt.executeQuery(sql);
-        ResultSet executeQuery = result;
-        rslt = wrapResultSet(jdbcEvent, executeQuery, this.ref);
-		success = true;
-		}
-		finally {
-		JdbcProfiler.getInstance().stop(JdbcProfiler.OP_EXECUTE_QUERY, this.ref);
-		JdbcProfiler.getInstance().addStack(this.ref);
-		if( ! success ) {
-		    // log the failure on error. Otherwise, let the result set do it.
-		    JdbcProfiler.getInstance().addRowsRead(0, ref, success);
-		}
+			result = this.stmt.executeQuery(sql);
+			ResultSet executeQuery = result;
+			rslt = wrapResultSet(jdbcEvent, executeQuery, this.ref);
+			success = true;
+		} finally {
+			JdbcProfiler.getInstance().stop(JdbcProfiler.OP_EXECUTE_QUERY,
+					this.ref);
+			JdbcProfiler.getInstance().addStack(this.ref);
+			if (!success) {
+				// log the failure on error. Otherwise, let the result set do
+				// it.
+				JdbcProfiler.getInstance().addRowsRead(0, ref, success);
+			}
 		}
 		return rslt;
 	}
 
     protected ResultSet wrapResultSet(JdbcEvent jdbcEvent, ResultSet executeQuery, String ref)
     {
-        return WrappedResultSet.wrapResultSet(
-				executeQuery, ref, jdbcEvent);
+        ResultSet wrapResultSet = WrappedResultSet.wrapResultSet(
+				executeQuery, ref, jdbcEvent, this);
+		return wrapResultSet;
     }
+
+	protected void addPendingResultSet(ResultSet wrapResultSet) {
+		pendingResultSets.add(wrapResultSet);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -125,17 +134,18 @@ public class WrappedStatement implements Statement {
 	@Override
     public final int executeUpdate(String sql) throws SQLException {
 		profileSqlStatement(sql);
-		JdbcProfiler.getInstance().start(JdbcProfiler.OP_EXECUTE_UPDATE, this.ref);
+		JdbcProfiler.getInstance().start(JdbcProfiler.OP_EXECUTE_UPDATE,
+				this.ref);
 		int rows = 0;
 		boolean success = false;
 		try {
-		rows = this.stmt.executeUpdate(sql);
-		success = true;
-		}
-		finally {
-		JdbcProfiler.getInstance().stop(JdbcProfiler.OP_EXECUTE_UPDATE, this.ref);
-		JdbcProfiler.getInstance().addStack(this.ref);
-		JdbcProfiler.getInstance().addRowsUpdated(rows, this.ref, success);
+			rows = this.stmt.executeUpdate(sql);
+			success = true;
+		} finally {
+			JdbcProfiler.getInstance().stop(JdbcProfiler.OP_EXECUTE_UPDATE,
+					this.ref);
+			JdbcProfiler.getInstance().addStack(this.ref);
+			JdbcProfiler.getInstance().addRowsUpdated(rows, this.ref, success);
 		}
 		
 		return rows;
@@ -148,6 +158,12 @@ public class WrappedStatement implements Statement {
 	 */
 	@Override
     public final void close() throws SQLException {
+		
+		for (ResultSet pendingResultSet : pendingResultSets) {
+			pendingResultSet.close();
+		}
+		pendingResultSets.clear();
+		
 		this.stmt.close();
 	}
 

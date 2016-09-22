@@ -1439,7 +1439,8 @@ public class WrappedOracleCallableStatement extends WrappedCallableStatement
     		ResultSet executeQuery, String ref) {
         if (executeQuery instanceof OracleResultSet)
         {
-            return WrappedOracleStatement.wrapOracleResultSet((OracleResultSet) executeQuery, ref, jdbcEvent);
+			return WrappedOracleStatement.wrapOracleResultSet(
+					(OracleResultSet) executeQuery, ref, jdbcEvent, this);
         }
 
         return super.wrapResultSet(jdbcEvent, executeQuery, ref);
