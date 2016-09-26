@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
@@ -112,6 +114,51 @@ public class CsvPerformanceLogsToFilePrinterTest {
 		for (File file : listFiles) {
 			assertTrue(file.delete());
 		}
+	}
+	
+	@Test
+	public void testCsvPrintingDeleteOldFiles() throws Exception {
+		
+
+		PerformanceLogger.setEnabled(true);
+		PerformanceLogger.addStatistic("testActive", 123000000);
+		PerformanceLogger.addStatistic("testInactive", 456000000);
+		
+		CsvPerformanceLogsToFilePrinter printer = new CsvPerformanceLogsToFilePrinter();
+		printer.setCsvFileNamePattern(CSV_FILE_NAME_PATTERN);
+		printer.setFileHistoryCount(3);
+		printer.run();
+		
+		File[] listFiles = directory.listFiles();
+		assertEquals(1, listFiles.length);
+		File oldFile = listFiles[0];
+		
+		Pattern fileNamePatternMatcher = printer.getFileNamePatternMatcher();
+		FilenameFilter createFileNamePatternMatcher = printer.createFileNamePatternMatcher(fileNamePatternMatcher);
+		
+		assertTrue( createFileNamePatternMatcher.accept(directory, oldFile.getName()));
+		
+		File dummyFile = new File(directory, "dummy.txt");
+		assertEquals( true, dummyFile.createNewFile() );
+		
+		assertEquals( true, dummyFile.exists() );
+		
+		// ensure the new file has a new name
+		Thread.sleep(2000);
+		
+		// start a second printer, ensure that it cleans up old files.
+		printer = new CsvPerformanceLogsToFilePrinter();
+		printer.setCsvFileNamePattern(CSV_FILE_NAME_PATTERN);
+		printer.setFileHistoryCount(3);
+		printer.run();
+		
+		listFiles = directory.listFiles();
+		assertEquals(2, listFiles.length);
+		assertEquals( true, dummyFile.exists() );
+		assertEquals( false, oldFile.exists() );
+		
+		dummyFile.delete();
+		
 	}
 
 }

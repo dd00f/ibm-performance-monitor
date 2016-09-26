@@ -6,6 +6,7 @@ package com.ibm.logger.trace;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.DateFormat;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,6 +57,8 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 
 	private boolean lastDeleteSuccessful = true;
 
+	private boolean firstRun = true;
+
 	public CsvPerformanceLogsToFilePrinter() {
 		super();
 		initializePropertiesFromSystem();
@@ -84,9 +89,70 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 
 	@Override
 	public synchronized void run() {
+		deleteOldFilesOnFirstRun();
+
 		dumpPerformanceLogsCsvToFile();
 
 		deleteOldCsvFile();
+	}
+
+	public void deleteOldFilesOnFirstRun() {
+		if (!firstRun) {
+			return;
+		}
+
+		firstRun = false;
+
+		try {
+			String sampleFileName = getCsvFileName();
+			File sampleFile = new File(sampleFileName);
+			File parentFile = sampleFile.getParentFile();
+			
+			final Pattern nameMatcher = getFileNamePatternMatcher();
+			
+			if( parentFile.exists()) {
+				FilenameFilter fileNamePatternMatcher = createFileNamePatternMatcher(nameMatcher);
+				File[] deleteList = parentFile.listFiles(fileNamePatternMatcher);
+				
+				for (File fileToDelete : deleteList) {
+					deleteFile(fileToDelete);
+				}
+			}
+		} catch (Exception ex) {
+			LoggingHelper.logUnexpectedException(LOGGER,
+					CsvPerformanceLogsToFilePrinter.class.getName(),
+					"deleteOldFilesOnFirstRun", ex);
+		}
+
+	}
+
+	protected Pattern getFileNamePatternMatcher() {
+		String fileNameMatchPattern = getFileNameMatchRegularExpression();
+		
+		final Pattern nameMatcher = Pattern.compile(fileNameMatchPattern);
+		return nameMatcher;
+	}
+
+	protected FilenameFilter createFileNamePatternMatcher(
+			final Pattern nameMatcher) {
+		return new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				Matcher matcher = nameMatcher.matcher(name);
+				return matcher.matches();
+			}
+		};
+	}
+
+	private String getFileNameMatchRegularExpression() {
+		String fileNameMatchPattern = csvFileNamePattern;
+		int lastIndexOfAny = StringUtils.lastIndexOfAny(csvFileNamePattern, "\\", "/");		
+		if (lastIndexOfAny != -1) {
+			fileNameMatchPattern = csvFileNamePattern.substring(lastIndexOfAny+1);
+		}
+		fileNameMatchPattern = StringUtils.replace(fileNameMatchPattern,
+				DATE_ISO_8601_TOKEN, "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}Z");
+		return fileNameMatchPattern;
 	}
 
 	private void deleteOldCsvFile() {
@@ -103,18 +169,22 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 	}
 
 	private void deleteFile(String fileToDelete) {
+		File oldFile = new File(fileToDelete);
+		deleteFile(oldFile);
+	}
+
+	private void deleteFile(File oldFile) {
 		try {
-			// Java NIO requires Java 7+. 
-			//Path deletePath = FileSystems.getDefault().getPath(fileToDelete);
-			//Files.deleteIfExists(deletePath);
-			
-			File oldFile = new File(fileToDelete);
+			// Java NIO requires Java 7+.
+			// Path deletePath = FileSystems.getDefault().getPath(fileToDelete);
+			// Files.deleteIfExists(deletePath);
+
 			if (oldFile.exists()) {
 				boolean deleteSuccess = oldFile.delete();
 				if (!deleteSuccess && lastDeleteSuccessful != deleteSuccess) {
 					LOGGER.log(Level.WARNING,
 							"Failed to delete old performance metric CSV file : "
-									+ fileToDelete);
+									+ oldFile.getName());
 				}
 				lastDeleteSuccessful = deleteSuccess;
 			}
@@ -149,7 +219,6 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 					.dumpPerformanceLogsCsvToString();
 
 			createReportWriter.append(performanceLogsTable);
-
 
 		} catch (Exception e) {
 			LoggingHelper.logUnexpectedException(LOGGER,
