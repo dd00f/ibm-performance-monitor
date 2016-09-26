@@ -139,6 +139,7 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 		BufferedOutputStream bos = null;
 		try {
 			String fileName = getCsvFileName();
+			printedFileNameList.add(fileName);
 
 			fos = new FileOutputStream(fileName);
 			bos = new BufferedOutputStream(fos);
@@ -149,7 +150,6 @@ public class CsvPerformanceLogsToFilePrinter implements Runnable {
 
 			createReportWriter.append(performanceLogsTable);
 
-			printedFileNameList.add(fileName);
 
 		} catch (Exception e) {
 			LoggingHelper.logUnexpectedException(LOGGER,
