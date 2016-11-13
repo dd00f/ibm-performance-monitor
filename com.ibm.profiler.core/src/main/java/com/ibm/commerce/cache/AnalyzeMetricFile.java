@@ -122,9 +122,9 @@ public class AnalyzeMetricFile {
 
     private DirectDatabaseMetricGatherer gatherer;
 
-    private SingleJdbcDataSource dataSource;
+    public SingleJdbcDataSource dataSource;
 
-    private SingleJdbcConnection jdbcConnection;
+    public SingleJdbcConnection jdbcConnection;
 
     private String reportOutputDir;
 
@@ -1641,7 +1641,7 @@ public class AnalyzeMetricFile {
         }
     }
 
-    private void printToFile( String resultToPrint, String fileName ) {
+    public void printToFile( String resultToPrint, String fileName ) {
         PrintWriter writer = null;
         try {
             // $ANALYSIS-IGNORE
