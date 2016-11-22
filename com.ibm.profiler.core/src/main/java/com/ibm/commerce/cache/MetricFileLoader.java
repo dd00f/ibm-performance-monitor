@@ -337,7 +337,7 @@ public class MetricFileLoader {
         }
     }
 
-    private boolean parseLineAndGatherMetric( String readLine ) {
+    public boolean parseLineAndGatherMetric( String readLine ) {
         final String METHODNAME = "parseLineAndGatherMetric(String readLine)";
         // boolean isTraceLogEnabled = LoggingHelper.isTraceEnabled(LOGGER);
         boolean entryExitLogEnabled = LoggingHelper.isEntryExitTraceEnabled( LOGGER );
@@ -568,7 +568,7 @@ public class MetricFileLoader {
         }
     }
 
-    private long parseLogTimeStamp( String timestamp ) throws ParseException {
+    public long parseLogTimeStamp( String timestamp ) throws ParseException {
         long stopTime = 0;
         Date parse = formatter.parse( timestamp );
         stopTime = parse.getTime();
