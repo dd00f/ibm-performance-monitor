@@ -122,9 +122,9 @@ public class AnalyzeMetricFile {
 
     private DirectDatabaseMetricGatherer gatherer;
 
-    public SingleJdbcDataSource dataSource;
+    private SingleJdbcDataSource dataSource;
 
-    public SingleJdbcConnection jdbcConnection;
+    private SingleJdbcConnection jdbcConnection;
 
     private String reportOutputDir;
 
@@ -2052,5 +2052,13 @@ public class AnalyzeMetricFile {
         Number object = (Number) executeQuery.get( 0 ).get( 0 );
         return object.intValue();
     }
-
+    
+    public SingleJdbcDataSource getDataSource() {
+		return dataSource;
+	}
+    
+    public SingleJdbcConnection getJdbcConnection() {
+		return jdbcConnection;
+	}
+    
 }
