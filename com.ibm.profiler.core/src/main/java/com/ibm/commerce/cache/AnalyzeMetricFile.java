@@ -720,7 +720,7 @@ public class AnalyzeMetricFile {
             insertXmlUtf8EncodingHeader(report);
             
 			report.append("<operation name=\"");
-			report.append(operationName);
+			report.append(StringEscapeUtils.escapeXml(operationName));
 			report.append("\">").append(CacheUtilities.LINE_SEPARATOR)
 					.append(CacheUtilities.LINE_SEPARATOR);
 
@@ -1359,7 +1359,7 @@ public class AnalyzeMetricFile {
             report = createReportWriter(reportFileName);
 	        insertXmlUtf8EncodingHeader(report);
 	        report.append( "<operation name=\"" );
-	        report.append( operationName );
+	        report.append( StringEscapeUtils.escapeXml(operationName) );
 	        report.append( "\">" ).append( CacheUtilities.LINE_SEPARATOR ).append( CacheUtilities.LINE_SEPARATOR );
 	
 	        stack = getFastestStack( operationName );
