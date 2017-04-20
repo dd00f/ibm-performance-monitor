@@ -1,5 +1,7 @@
 package com.ibm.issw.jdbc.wrappers;
 
+import com.ibm.commerce.cache.MetricFileLoader;
+
 /*
  *-----------------------------------------------------------------
  * IBM Confidential
@@ -24,7 +26,9 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -463,15 +467,18 @@ public class WrappedStatement implements Statement {
 		// set the batch size
 		JdbcProfiler.getInstance().addSetData(-1, batchList.size(), ref);
 		StringBuilder retVal = new StringBuilder("SQL Batch : ");
-		String previous = null;
+		// ensure that each query is only printed once in the operation name.
+		Set<String> existingQueries = new HashSet<String>();
 		for (String string : batchList) {
-			if (previous == null) {
-				previous = string;
-			} else if (previous.equals(string)) {
-				continue;
+			if(! existingQueries.contains(string)) {
+				existingQueries.add(string);
+				String sanitizedSql = MetricFileLoader.substituteJdbcParameters(string);
+				if(! existingQueries.contains(sanitizedSql)) {
+					existingQueries.add(sanitizedSql);
+					retVal.append(sanitizedSql);
+					retVal.append(" - ");
+				}
 			}
-			retVal.append(string);
-			retVal.append(" - ");
 		}
 		return retVal.toString();
 	}
