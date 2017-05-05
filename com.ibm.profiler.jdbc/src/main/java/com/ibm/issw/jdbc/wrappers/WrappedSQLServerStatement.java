@@ -53,9 +53,10 @@ public class WrappedSQLServerStatement extends WrappedStatement implements ISQLS
     /**
      * 
      * wrapResultSet
-     * @param resultSet
-     * @param currentRef
-     * @param jdbcEvent
+     * @param resultSet the result set
+     * @param currentRef the reference string
+     * @param jdbcEvent the event
+     * @param statement the statement
      * @return the wrapped result set
      */
     public static ResultSet wrapSqlServerResultSet(ISQLServerResultSet resultSet,

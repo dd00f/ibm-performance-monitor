@@ -1178,7 +1178,7 @@ public class WrappedOracleCallableStatement extends WrappedCallableStatement
 
 	@Override
 	public Object getPlsqlIndexTable(int paramInt,
-			@SuppressWarnings("rawtypes") Class paramClass) throws SQLException {
+			Class paramClass) throws SQLException {
 		return oraclePs.getPlsqlIndexTable(paramInt, paramClass);
 	}
 

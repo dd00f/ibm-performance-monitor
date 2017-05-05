@@ -65,11 +65,12 @@ public class WrappedCalculatedResultSet implements ResultSet {
 	private int rowsRead = 0;
 	private String ref;
 	private JdbcEvent event;
+	
 	/**
 	 * ctor
-	 * @param resultSet
-	 * @param reference
-	 * @param event
+	 * @param resultSet the result set
+	 * @param reference the reference string
+	 * @param event the event
 	 */
 	public WrappedCalculatedResultSet(ResultSet resultSet, String reference,
 			JdbcEvent event) {
@@ -503,11 +504,13 @@ public class WrappedCalculatedResultSet implements ResultSet {
 		return asciiStream;
 	}
 
+    @SuppressWarnings("unused")
     private void addReadStream(InputStream asciiStream) {
 		// dummy stream length value for now
 		addReadSize(100);
 	}
 
+    @SuppressWarnings("unused")
     private void addReadStream(Reader asciiStream) {
 		// dummy stream length value for now
 		addReadSize(100);

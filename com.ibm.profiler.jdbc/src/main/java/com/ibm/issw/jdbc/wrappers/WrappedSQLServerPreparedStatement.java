@@ -26,9 +26,11 @@ public class WrappedSQLServerPreparedStatement extends WrappedPreparedStatement 
     /**
      * ctor
      * 
-     * @param preparedStatement
-     * @param sql
-     * @param ref
+     * @param preparedStatement the prepared statement to wrap
+     * @param sql the SQL to run
+     * @param ref the reference string
+     * @param transaction the transaction
+     * @param connection the connection
      */
     public WrappedSQLServerPreparedStatement(ISQLServerPreparedStatement preparedStatement, String sql, String ref, String transaction, Connection connection)
     {

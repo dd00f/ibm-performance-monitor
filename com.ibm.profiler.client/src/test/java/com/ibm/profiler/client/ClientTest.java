@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -63,7 +63,7 @@ public class ClientTest {
     public void basicJMXBeanTest() {
         long start = System.currentTimeMillis();
         initialBean();
-        PerformanceLoggerManagerMXBean myBean = getPerformanceLoggerManagerMBean( getMBeanServerConnection() );
+        PerformanceLoggerManagerMXBean myBean = getPerformanceLoggerManagerMBean( );
         Assert.assertNotNull( myBean );
         System.out.println( "basicJMXBeanTest total Time: " + ( System.currentTimeMillis() - start ) );
 
@@ -77,7 +77,7 @@ public class ClientTest {
 
     }
 
-    private PerformanceLoggerManagerMXBean getPerformanceLoggerManagerMBean( MBeanServerConnection mBeanServerConnection ) {
+    private PerformanceLoggerManagerMXBean getPerformanceLoggerManagerMBean() {
         if ( jmxBean == null )
             jmxBean = PerformanceLoggerManagerCLI.getPerformanceLoggerManagerMBean( getMBeanServerConnection() );
         return jmxBean;

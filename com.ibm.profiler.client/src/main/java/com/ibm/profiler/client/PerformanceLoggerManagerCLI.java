@@ -34,7 +34,7 @@ public class PerformanceLoggerManagerCLI {
 	private static String dumpToTableFile = null;
 	
     /**
-     * @param args
+     * @param args arguments
      */
     public static void main( String[] args ) {
         String host = "127.0.0.1";
@@ -122,8 +122,8 @@ public class PerformanceLoggerManagerCLI {
 	/**
      * MBean helper class
      * 
-     * @param conn
-     * @return
+     * @param conn the mbean connection
+     * @return the performance logger
      */
     protected static PerformanceLoggerManagerMXBean getPerformanceLoggerManagerMBean( MBeanServerConnection conn ) {
         String JMX_DOMAIN = "com.ibm.profiler";
@@ -150,9 +150,9 @@ public class PerformanceLoggerManagerCLI {
     /**
      * JMX Connector helper class
      * 
-     * @param host
-     * @param port
-     * @return
+     * @param host host name
+     * @param port port
+     * @return the mbean server connection
      */
     protected static MBeanServerConnection getMBeanServerConnection( String host, String port ) {
         return getMBeanServerConnection( host, port, null );
@@ -161,10 +161,10 @@ public class PerformanceLoggerManagerCLI {
     /**
      * JMX Connector helper class
      * 
-     * @param host
-     * @param port
-     * @param service
-     * @return
+     * @param host host name
+     * @param port port number
+     * @param service service name
+     * @return the mbean connection
      */
     protected static MBeanServerConnection getMBeanServerConnection( String host, String port, String service ) {
         try {

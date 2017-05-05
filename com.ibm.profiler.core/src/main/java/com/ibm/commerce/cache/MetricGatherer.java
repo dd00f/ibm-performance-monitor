@@ -50,4 +50,10 @@ public interface MetricGatherer {
 	 * Stop the metric gatherer.
 	 */
 	public void stop();
+	
+	/**
+	 * Is the metric gatherer enabled.
+	 * @return true if metric gathering is enabled
+	 */
+	public boolean isEnabled();
 }

@@ -180,7 +180,7 @@ public class BatchedAsynchronousFileHandler extends StreamHandler {
         setOutputStream( output );
     }
 
-    @SuppressWarnings( "nls" )
+    // @SuppressWarnings( "nls" )
     private void initProperties( String p, Integer l, Integer c, Boolean a ) {
         initBasicProperties( "ALL", null, "java.util.logging.XMLFormatter" );
         String className = this.getClass().getName();
@@ -499,7 +499,7 @@ public class BatchedAsynchronousFileHandler extends StreamHandler {
      * @throws NullPointerException
      *             if pattern is <code>null</code>.
      * @throws IllegalArgumentException
-     *             if count<1, or limit<0
+     *             if count&lt;1, or limit&lt;0
      */
     public BatchedAsynchronousFileHandler( String pattern, int limit, int count ) throws IOException, SecurityException, NullPointerException, IllegalArgumentException {
         init( true, pattern, limit, count, null );
@@ -535,7 +535,7 @@ public class BatchedAsynchronousFileHandler extends StreamHandler {
      * @throws NullPointerException
      *             if pattern is <code>null</code>.
      * @throws IllegalArgumentException
-     *             if count<1, or limit<0
+     *             if count&lt;1, or limit&lt;0
      */
     public BatchedAsynchronousFileHandler( String pattern, int limit, int count, boolean append ) throws IOException, SecurityException, NullPointerException, IllegalArgumentException {
         init( true, pattern, limit, count, append );

@@ -1,5 +1,7 @@
 package com.ibm.profiler.cassandra;
 
+import java.util.Map;
+
 /*
  *-----------------------------------------------------------------
  * IBM Confidential
@@ -148,6 +150,21 @@ public class ProfiledSession implements Session {
     @Override
     public ListenableFuture<Session> initAsync() {
         return session.initAsync();
+    }
+
+    @Override
+    public ResultSet execute(String arg0, Map<String, Object> arg1)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ResultSetFuture executeAsync(String arg0, Map<String, Object> arg1)
+    {
+        String[] convertArgumentArrayToNumericArgumentArray = ProfilingUtilities.convertArgumentMapToArray(arg1);
+        OperationMetric metric = ProfilingUtilities.initializeMetric( arg0, convertArgumentArrayToNumericArgumentArray );
+        ResultSetFuture executeAsync = session.executeAsync( arg0, arg1 );
+        return new ProfiledResultSetFuture( executeAsync, metric );
     }
 
 }

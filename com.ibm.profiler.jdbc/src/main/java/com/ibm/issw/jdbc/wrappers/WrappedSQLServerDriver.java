@@ -25,7 +25,6 @@ public class WrappedSQLServerDriver implements Driver {
 		driver = new SQLServerDriver();
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
 		Connection connect = superGetConnection(url, info);

@@ -108,7 +108,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setSqlStatement
-	 * @param sqlStatement
+	 * @param sqlStatement the statement
 	 */
 	public void setSqlStatement(String sqlStatement) {
 		this.sqlStatement = sqlStatement;
@@ -117,7 +117,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * getStartTime
-	 * @return getStartTime
+	 * @return getStartTime the start time
 	 */
 	public long getStartTime() {
 		return startTime;
@@ -126,7 +126,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setStartTime
-	 * @param startTime
+	 * @param startTime the start time
 	 */
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
@@ -135,7 +135,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * getStopTime
-	 * @return getStopTime
+	 * @return the stop time
 	 */
 	public long getStopTime() {
 		return stopTime;
@@ -144,7 +144,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setStopTime
-	 * @param stopTime
+	 * @param stopTime the stop time
 	 */
 	public void setStopTime(long stopTime) {
 		this.stopTime = stopTime;
@@ -162,7 +162,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setExecuteTime
-	 * @param executeTime
+	 * @param executeTime the execution time
 	 */
 	public void setExecuteTime(long executeTime) {
 		this.executeTime = executeTime;
@@ -180,7 +180,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setPrepareTime
-	 * @param prepareTime
+	 * @param prepareTime the prepare time
 	 */
 	public void setPrepareTime(long prepareTime) {
 		this.prepareTime = prepareTime;
@@ -198,7 +198,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setThreadName
-	 * @param threadName
+	 * @param threadName the thread name
 	 */
 	public void setThreadName(String threadName) {
 		this.threadName = threadName;
@@ -216,7 +216,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setRowsUpdated
-	 * @param rowsUpdated
+	 * @param rowsUpdated the number of rows updated
 	 */
 	public void setRowsUpdated(int rowsUpdated) {
 		this.rowsUpdated = rowsUpdated;
@@ -234,7 +234,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setRowsRead
-	 * @param rowsRead
+	 * @param rowsRead the number of rows read
 	 */
 	public void setRowsRead(int rowsRead) {
 		this.rowsRead = rowsRead;
@@ -252,7 +252,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setSequence
-	 * @param sequence
+	 * @param sequence the sequence number
 	 */
 	public void setSequence(int sequence) {
 		this.sequence = sequence;
@@ -270,7 +270,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setReadSize
-	 * @param readSize
+	 * @param readSize the read size
 	 */
 	public void setReadSize(long readSize) {
 		this.readSize = readSize;
@@ -288,7 +288,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setTransactionTime
-	 * @param transactionTime
+	 * @param transactionTime the transaction time
 	 */
 	public void setTransactionTime(long transactionTime) {
 		this.transactionTime = transactionTime;
@@ -306,7 +306,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setTables
-	 * @param tables
+	 * @param tables the tables read
 	 */
 	public void setTables(String tables) {
 		this.tables = tables;
@@ -324,7 +324,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setStatementType
-	 * @param statementType
+	 * @param statementType the statement type
 	 */
 	public void setStatementType(String statementType) {
 		this.statementType = statementType;
@@ -342,7 +342,7 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setStack
-	 * @param stack
+	 * @param stack the stack elements
 	 */
 	public void setStack(StackTraceElement[] stack) {
 		this.stack = stack;
@@ -360,17 +360,25 @@ public final class JdbcEvent implements Serializable {
 	/**
 	 * 
 	 * setParameters
-	 * @param parameters
+	 * @param parameters the parameters 
 	 */
 	public void setParameters(Map<Integer, Serializable> parameters) {
 		this.parameters = parameters;
 	}
 
+	/**
+	 * getTransactionId
+	 * @return the transaction id
+	 */
     public String getTransactionId()
     {
         return transactionId;
     }
 
+    /**
+     * set the transaction id
+     * @param transactionId the transaction id
+     */
     public void setTransactionId(String transactionId)
     {
         this.transactionId = transactionId;

@@ -51,9 +51,11 @@ public class WrappedCallableStatement extends WrappedPreparedStatement
 
 	/**
 	 * 
-	 * @param statement
-	 * @param sql
-	 * @param ref
+	 * @param statement the statement
+	 * @param sql sql string
+	 * @param ref reference string
+	 * @param transaction transaction string
+	 * @param connection the connection
 	 */
 	public WrappedCallableStatement(CallableStatement statement, String sql,
 			String ref, String transaction, Connection connection) {

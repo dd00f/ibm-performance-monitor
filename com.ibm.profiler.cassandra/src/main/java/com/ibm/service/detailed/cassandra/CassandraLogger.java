@@ -19,7 +19,9 @@ package com.ibm.service.detailed.cassandra;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.LogMetricGatherer;
+import com.ibm.commerce.cache.LogMetricGathererManager;
 
 /**
  * Cassandra request performance logging.
@@ -38,10 +40,13 @@ public class CassandraLogger {
 
 	/**
 	 * The metric gatherer.
+	 * @deprecated use LOG_GATHERER instead.
 	 */
 	public static final LogMetricGatherer METRIC_GATHERER = new LogMetricGatherer(
 			LOGGER);
-
+	
+    public static final ILogMetricGatherer LOG_GATHERER = LogMetricGathererManager.getLogMetricGatherer(CassandraLogger.class);
+    
 	/**
 	 * Level at which to measure the cache potential.
 	 */

@@ -144,6 +144,7 @@ public class ProfilingUtilitiesTest {
     @Test
     public void testInitializeMetric() {
 
+        @SuppressWarnings("deprecation")
         Logger logger = CassandraLogger.METRIC_GATHERER.getLogger();
         logger.addHandler( new ConsoleHandler() );
 

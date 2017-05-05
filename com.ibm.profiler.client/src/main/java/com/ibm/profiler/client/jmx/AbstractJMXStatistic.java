@@ -19,6 +19,7 @@ public abstract class AbstractJMXStatistic implements JMXStatistic {
 
     public abstract void _parse( MBeanServerConnection conn, MBeanInfo mbean, ObjectInstance one );
 
+    @Override
     public int compareTo( Object arg0 ) {
         if ( arg0 == null )
             return -1;
@@ -35,11 +36,8 @@ public abstract class AbstractJMXStatistic implements JMXStatistic {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.JMXStatistic#getKey()
-     */
+
+    @Override
     public JMXStatisticKey getKey() {
         return key;
     }
@@ -71,12 +69,7 @@ public abstract class AbstractJMXStatistic implements JMXStatistic {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.JMXStatistic#parse(javax.management.MBeanServerConnection,
-     * javax.management.MBeanInfo, javax.management.ObjectInstance)
-     */
+    @Override
     public final JMXStatistic parse( MBeanServerConnection conn, MBeanInfo mbean, ObjectInstance one ) {
 
         if ( one == null ) {
@@ -92,13 +85,9 @@ public abstract class AbstractJMXStatistic implements JMXStatistic {
         return "AbstractJMXStatistics [key=" + key + "]";
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.JMXStatistic#isEmpty()
-     */
+
+    @Override
     public boolean isEmpty() {
-        // TODO Auto-generated method stub
         return false;
     }
 

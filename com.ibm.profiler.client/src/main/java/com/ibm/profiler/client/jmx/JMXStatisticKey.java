@@ -57,6 +57,7 @@ public class JMXStatisticKey implements Comparable<Object> {
         return "StatisticKey [domain=" + domain + ", type=" + type + "]";
     }
 
+    @Override
     public int compareTo( Object arg0 ) {
         if ( arg0 == null )
             return -1;

@@ -19,7 +19,6 @@ public class WrappedDB2Driver extends DB2Driver {
 		
 	}
 	
-	@SuppressWarnings("resource")
 	@Override
 	public Connection connect(String arg0, Properties arg1) throws SQLException {
 		Connection connect = superGetConnection(arg0, arg1);

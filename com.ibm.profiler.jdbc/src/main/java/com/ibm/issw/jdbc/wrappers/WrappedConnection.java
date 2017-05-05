@@ -60,7 +60,7 @@ public class WrappedConnection implements Connection {
 	
 	/**
 	 * ctor
-	 * @param connection
+	 * @param connection the connection
 	 */
 	public WrappedConnection(Connection connection) {
 		this.realConnection = connection;
@@ -68,7 +68,7 @@ public class WrappedConnection implements Connection {
 	
 	/**
 	 * Get the real connection
-	 * @return
+	 * @return the real connection
 	 */
 	public Connection getRealConnection() {
 		return realConnection;
@@ -218,7 +218,7 @@ public class WrappedConnection implements Connection {
             metric = new OperationMetric();
             metric.startOperation("JDBC_Commit", false, ref);
             metric.setProperty(JdbcProfiler.TRANSACTION_ID, transaction);
-            JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
+            JdbcLogger.GATHERER.gatherMetricEntryLog(metric);
             
             JdbcProfiler.getInstance().start(JdbcProfiler.OP_ROLLBACK, ref);
         }
@@ -233,7 +233,7 @@ public class WrappedConnection implements Connection {
             if (metric != null )
             {
                 metric.stopOperation(1, false);
-                JdbcLogger.LOG_GATHERER.gatherMetric(metric, true);
+                JdbcLogger.GATHERER.gatherMetric(metric);
                 JdbcProfiler.getInstance().stop(JdbcProfiler.OP_ROLLBACK, ref);
             }
         }   
@@ -253,7 +253,7 @@ public class WrappedConnection implements Connection {
             metric = new OperationMetric();
             metric.startOperation("JDBC_Rollback", false, ref);
             metric.setProperty(JdbcProfiler.TRANSACTION_ID, transaction);
-            JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
+            JdbcLogger.GATHERER.gatherMetricEntryLog(metric);
             
             JdbcProfiler.getInstance().start(JdbcProfiler.OP_ROLLBACK, ref);
         }
@@ -268,7 +268,7 @@ public class WrappedConnection implements Connection {
             if (metric != null )
             {
                 metric.stopOperation(1, false);
-                JdbcLogger.LOG_GATHERER.gatherMetric(metric, true);
+                JdbcLogger.GATHERER.gatherMetric(metric);
                 JdbcProfiler.getInstance().stop(JdbcProfiler.OP_ROLLBACK, ref);
             }
         }		
@@ -287,7 +287,7 @@ public class WrappedConnection implements Connection {
             metric = new OperationMetric();
             metric.startOperation("JDBC_Close", false, ref);
             metric.setProperty("transaction", transaction);
-            JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
+            JdbcLogger.GATHERER.gatherMetricEntryLog(metric);
         }
 
         try
@@ -301,7 +301,7 @@ public class WrappedConnection implements Connection {
             if (metric != null )
             {
                 metric.stopOperation(1, false);
-                JdbcLogger.LOG_GATHERER.gatherMetric(metric, true);
+                JdbcLogger.GATHERER.gatherMetric(metric);
             }
         }
 	}
@@ -870,7 +870,7 @@ public class WrappedConnection implements Connection {
     {
         if( metric != null ) {
             metric.stopOperation(1, false, success);
-            JdbcLogger.LOG_GATHERER.gatherMetric(metric);
+            JdbcLogger.GATHERER.gatherMetric(metric);
         }
     }
 
@@ -879,7 +879,7 @@ public class WrappedConnection implements Connection {
         if( JdbcProfiler.isProfilingEnabled()) {
             metric = new OperationMetric();
             metric.startOperation("JDBC_driver_connect", false);
-            JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
+            JdbcLogger.GATHERER.gatherMetricEntryLog(metric);
         }
         return metric;
     }

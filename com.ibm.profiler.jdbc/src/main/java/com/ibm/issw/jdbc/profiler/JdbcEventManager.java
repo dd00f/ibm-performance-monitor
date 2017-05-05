@@ -35,7 +35,7 @@ public final class JdbcEventManager {
 	 * 
 	 * addJdbcEventListener
 	 * 
-	 * @param listener
+	 * @param listener the listener
 	 */
 	public static void addJdbcEventListener(JdbcEventListener listener) {
 		if (!LISTENERS.contains(listener)) {
@@ -47,7 +47,7 @@ public final class JdbcEventManager {
 	 * 
 	 * removeJdbcEventListener
 	 * 
-	 * @param listener
+	 * @param listener the listener to remove
 	 */
 	public static void removeJdbcEventListener(JdbcEventListener listener) {
 		if (LISTENERS.contains(listener)) {
@@ -59,7 +59,7 @@ public final class JdbcEventManager {
 	 * 
 	 * notifyListeners
 	 * 
-	 * @param jdbcEvents
+	 * @param jdbcEvents the events to notify.
 	 */
 	public static void notifyListeners(JdbcEvent[] jdbcEvents) {
 		for (int i = 0; i < LISTENERS.size(); i++) {

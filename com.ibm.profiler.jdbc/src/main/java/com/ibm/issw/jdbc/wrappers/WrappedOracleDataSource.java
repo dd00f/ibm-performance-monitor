@@ -43,7 +43,7 @@ public class WrappedOracleDataSource extends
 	
 	/**
 	 * 
-	 * @throws SQLException
+	 * @throws SQLException if anything goes wrong.
 	 */
 	public WrappedOracleDataSource() throws SQLException {
 		JdbcProfilerDaemon.initializeDaemon();

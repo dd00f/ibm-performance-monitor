@@ -62,12 +62,8 @@ public class TotalLogEntry extends AbstractJMXStatistic {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.AbstractJMXStatistic#_parse(javax.management.MBeanServerConnection,
-     * javax.management.MBeanInfo, javax.management.ObjectInstance)
-     */
+
+    @Override
     public void _parse( MBeanServerConnection conn, MBeanInfo mbean, ObjectInstance one ) {
 
         try {
@@ -126,11 +122,7 @@ public class TotalLogEntry extends AbstractJMXStatistic {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.JMXStatistic#doDetail()
-     */
+    @Override
     public void doDetail() {
         int NANO = 1000000;
 
@@ -142,11 +134,7 @@ public class TotalLogEntry extends AbstractJMXStatistic {
             System.out.println( String.format( format, calls, avg, total, min, max, type, id ) );
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ibm.profiler.client.jmx.JMXStatistic#doHeader()
-     */
+    @Override
     public void doHeader() {
         System.out.println( "IBM B2B PerformanceStatistics\n" );
         System.out.println( String.format( format, "Num Calls", "Average", "Total", "Minimum", "Maximum", "Type", "Statistic ID" ) );
@@ -155,54 +143,55 @@ public class TotalLogEntry extends AbstractJMXStatistic {
     }
 
     /**
-     * @return
+     * @return the execution time average
      */
     public String getAvg() {
         return avg;
     }
 
     /**
-     * @return
+     * @return the call count.
      */
     public String getCalls() {
         return calls;
     }
 
     /**
-     * @return
+     * @return the statistics ID.
      */
     public String getId() {
         return id;
     }
 
     /**
-     * @return
+     * @return maximum execution time.
      */
     public String getMax() {
         return max;
     }
 
     /**
-     * @return
+     * @return minimum execution time
      */
     public String getMin() {
         return min;
     }
 
     /**
-     * @return
+     * @return total execution time.
      */
     public String getTotal() {
         return total;
     }
 
     /**
-     * @return
+     * @return the type of metrics.
      */
     public String getType() {
         return type;
     }
 
+    @Override
     public boolean isEmpty() {
         if ( id == null ) {
             return true;

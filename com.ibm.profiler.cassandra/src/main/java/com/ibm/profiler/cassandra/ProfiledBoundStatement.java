@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.PreparedStatement;
 
 /**
@@ -86,13 +86,13 @@ public class ProfiledBoundStatement extends BoundStatement {
     }
 
     @Override
-    public BoundStatement setDate( int i, Date v ) {
+    public BoundStatement setDate( int i, LocalDate v ) {
         arguments.put( ProfilingUtilities.getIntegerString( i ), v );
         return super.setDate( i, v );
     }
 
     @Override
-    public BoundStatement setDate( String arg0, Date arg1 ) {
+    public BoundStatement setDate( String arg0, LocalDate arg1 ) {
         arguments.put( arg0, arg1 );
         return super.setDate( arg0, arg1 );
     }

@@ -62,10 +62,11 @@ public class WrappedPreparedStatement extends WrappedStatement implements
 
 	/**
 	 * ctor
-	 * @param preparedStatement
-	 * @param sql
-	 * @param ref
-	 * @param transaction
+	 * @param preparedStatement the prepared statement to wrap
+	 * @param sql the sql
+	 * @param ref the execution reference
+	 * @param transaction the transaction string
+	 * @param connection the connection
 	 */
 	public WrappedPreparedStatement(PreparedStatement preparedStatement,
 			String sql, String ref, String transaction, Connection connection) {
@@ -109,9 +110,8 @@ public class WrappedPreparedStatement extends WrappedStatement implements
 	/**
 	 * 
 	 * allocateNewRef
-	 * @throws SQLException
 	 */
-	public void allocateNewRef() throws SQLException {
+	public void allocateNewRef() {
 		this.ref = WrappedConnection.getNextRefCount();
 	}
 	/*

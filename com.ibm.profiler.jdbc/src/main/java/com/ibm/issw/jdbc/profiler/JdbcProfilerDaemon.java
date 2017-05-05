@@ -98,7 +98,7 @@ public final class JdbcProfilerDaemon implements JdbcEventListener {
 
 	/**
 	 * notify JDBC events
-	 * @param jdbcEvents
+	 * @param jdbcEvents the event
 	 */
 	@Override
     public void notifyJdbcEvent(JdbcEvent[] jdbcEvents) {

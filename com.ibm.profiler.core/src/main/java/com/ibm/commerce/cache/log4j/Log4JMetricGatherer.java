@@ -1,15 +1,18 @@
-package com.ibm.commerce.cache;
+package com.ibm.commerce.cache.log4j;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+import com.ibm.commerce.cache.AbstractLogMetricGatherer;
+import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.logger.PerformanceLogger;
 
 /**
  * Gather performance metrics within a java logger output.
  */
-public class LogMetricGatherer extends AbstractLogMetricGatherer {
+public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 
 	/** copyright */
 	public static final String COPYRIGHT = com.ibm.commerce.copyright.IBMCopyright.SHORT_COPYRIGHT;
@@ -17,12 +20,12 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 	/**
 	 * default log level
 	 */
-	private static final Level DEFAULT_LOG_LEVEL = Level.FINE;
+	private static final Level DEFAULT_LOG_LEVEL = Level.DEBUG;
 
 	/**
 	 * default entry log level
 	 */
-	private static final Level DEFAULT_ENTRY_LOG_LEVEL = Level.FINER;
+	private static final Level DEFAULT_ENTRY_LOG_LEVEL = Level.TRACE;
 
 	/**
 	 * logger to use
@@ -45,14 +48,14 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 	 * @param setLogger
 	 *            the logger to use
 	 */
-	public LogMetricGatherer(Logger setLogger) {
+	public Log4JMetricGatherer(Logger setLogger) {
 		logger = setLogger;
 	}
 
 	/**
 	 * Empty constructor
 	 */
-	public LogMetricGatherer() {
+	public Log4JMetricGatherer() {
 
 	}
 
@@ -138,7 +141,7 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 	 */
 	@Override
     public void gatherMetricEntryLog(OperationMetric metric) {
-		if (logger.isLoggable(entryLevel)) {
+		if (logger.isEnabled(entryLevel)) {
 			logEntryLogMetricToLogger(metric, logger, entryLevel);
 		}
 	}
@@ -155,12 +158,12 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 	 */
 	public void gatherInformationLog(Level level, String message,
 			Map<String, String> properties) {
-		if (logger.isLoggable(level)) {
+		if (logger.isEnabled(level)) {
 		    
 		    String logMessage = formatInformationLog(message, properties);
 		    
 			if( logMessage != null ) {
-				this.logger.logp(level, "", "", logMessage);
+				this.logger.log(level, logMessage);
 			}
 		}
 	}
@@ -226,11 +229,11 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 			logLevel = DEFAULT_LOG_LEVEL;
 		}
 
-		if (currentLogger.isLoggable(logLevel)) {
+		if (currentLogger.isEnabled(logLevel)) {
 			String logMessage = formatMetricLog(metric, returnValue, printProperties);
 
 			if( logMessage != null ) {
-			    currentLogger.logp(logLevel, "", "", logMessage);
+			    currentLogger.log(logLevel, logMessage);
 			}
 		}
 
@@ -260,8 +263,9 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 		}
 
 		// pass true to write for Entrylog, pass false to write for Exitlog
-		currentLogger.logp(logLevel, "", "",
-				OperationMetric.writeEntryExitLog(metric, true));
+		String writeEntryExitLog = OperationMetric.writeEntryExitLog(metric, true);
+        currentLogger.log(logLevel, 
+				writeEntryExitLog);
 	}
 
 	/*
@@ -288,20 +292,14 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
 	 * Can the performance metric be logged.
 	 * 
 	 * @return true if the performance metric can be logged.
-	 * @deprecated Use the {@link com.ibm.commerce.cache.MetricGatherer#isEnabled()} method instead.
 	 */
-    public boolean isLoggable() {
-		return isEnabled();
+	@Override
+    public boolean isEnabled() {
+		if (logger == null) {
+			return false;
+		}
+		return logger.isEnabled(level)
+				|| PerformanceLogger.isEnabled();
 	}
-
-    @Override
-    public boolean isEnabled()
-    {
-        if (logger == null) {
-            return false;
-        }
-        return logger.isLoggable(level)
-                || PerformanceLogger.isEnabled();
-    }
 
 }

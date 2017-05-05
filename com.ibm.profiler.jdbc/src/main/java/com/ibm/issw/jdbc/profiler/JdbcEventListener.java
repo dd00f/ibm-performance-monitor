@@ -29,7 +29,7 @@ public abstract interface JdbcEventListener {
 	/**
 	 * 
 	 * notifyJdbcEvent
-	 * @param paramArrayOfJdbcEvent
+	 * @param paramArrayOfJdbcEvent the list of jdbc events
 	 */
 	public abstract void notifyJdbcEvent(JdbcEvent[] paramArrayOfJdbcEvent);
 }

@@ -70,11 +70,11 @@ public class WrappedDB2JCCDataSource extends DB2ConnectionPoolDataSource {
 	 * 
 	 * getPooledConnection
 	 * 
-	 * @param ds
-	 * @param user
-	 * @param pass
-	 * @return connection
-	 * @throws SQLException
+	 * @param ds the data source
+	 * @param user the user
+	 * @param pass the password
+	 * @return connection the connection
+	 * @throws SQLException if anything fails.
 	 */
 	public PooledConnection getPooledConnection(DB2BaseDataSource ds,
 			String user, String pass) throws SQLException {

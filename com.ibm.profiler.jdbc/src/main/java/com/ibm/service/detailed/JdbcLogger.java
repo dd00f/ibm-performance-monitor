@@ -19,7 +19,9 @@ package com.ibm.service.detailed;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.LogMetricGatherer;
+import com.ibm.commerce.cache.LogMetricGathererManager;
 
 /**
  * 
@@ -49,9 +51,13 @@ public class JdbcLogger {
 	
 	/**
 	 * log metric gatherer
+	 * @deprecated use GATHERER instead.
 	 */
 	public static final LogMetricGatherer LOG_GATHERER = new LogMetricGatherer(LOGGER);
-
+	
+    public static final ILogMetricGatherer GATHERER = LogMetricGathererManager.getLogMetricGatherer(JdbcLogger.class);
+    	
+	
 	static {
 		LOG_GATHERER.setLevel(MEASURE_CACHE_POTENTIAL_LEVEL);
 	}
@@ -62,7 +68,7 @@ public class JdbcLogger {
 	 * @return is loggable
 	 */
 	public static boolean isLoggable() {
-		return LOG_GATHERER.isLoggable();
+		return GATHERER.isEnabled();
 	}
 	
 	/**
@@ -71,7 +77,7 @@ public class JdbcLogger {
 	 * @return isResultSetSizeMeasured
 	 */
 	public static boolean isResultSetSizeMeasured() {
-		return LOG_GATHERER.getLogger().isLoggable(MEASURE_RESULT_SIZE_LEVEL);
+		return LOGGER.isLoggable(MEASURE_RESULT_SIZE_LEVEL);
 	}
 
 }

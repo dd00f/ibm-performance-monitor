@@ -176,7 +176,7 @@ public class WrappedOracleConnection extends WrappedConnection implements
 
 	@Override
 	public void registerSQLType(String paramString,
-			@SuppressWarnings("rawtypes") Class paramClass) throws SQLException {
+			Class paramClass) throws SQLException {
 		oracleConnection.registerSQLType(paramString, paramClass);
 
 	}

@@ -145,7 +145,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setUser
-	 * @param user
+	 * @param user user name
 	 */
 	public void setUser(String user) {
 		this.ds.setUser(user);
@@ -153,7 +153,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setPassword
-	 * @param password
+	 * @param password password
 	 */
 	public void setPassword(String password) {
 		this.ds.setPassword(password);
@@ -161,7 +161,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setDatabaseName
-	 * @param name
+	 * @param name db name
 	 */
 	public void setDatabaseName(String name) {
 		this.ds.setDatabaseName(name);
@@ -169,7 +169,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setCreateDatabase
-	 * @param create
+	 * @param create create db
 	 */
 	public void setCreateDatabase(String create) {
 		this.ds.setCreateDatabase(create);
@@ -177,7 +177,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setConnectionAttributes
-	 * @param attributes
+	 * @param attributes attributes
 	 */
 	public void setConnectionAttributes(String attributes) {
 		this.ds.setConnectionAttributes(attributes);
@@ -185,7 +185,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setShutdownDatabase
-	 * @param shutdown
+	 * @param shutdown shutdown
 	 */
 	public void setShutdownDatabase(String shutdown) {
 		this.ds.setShutdownDatabase(shutdown);
@@ -193,7 +193,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setDataSourceName
-	 * @param name
+	 * @param name name
 	 */
 	public void setDataSourceName(String name) {
 		this.ds.setDataSourceName(name);
@@ -201,7 +201,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setAttriubtesAsPassword
-	 * @param b
+	 * @param b setAttriubtesAsPassword
 	 */
 	public void setAttriubtesAsPassword(boolean b) {
 		this.ds.setAttributesAsPassword(b);
@@ -210,7 +210,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * setDescription
-	 * @param description
+	 * @param description description
 	 */
 	public void setDescription(String description) {
 		this.ds.setDescription(description);
@@ -228,7 +228,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	/**
 	 * 
 	 * getDescription
-	 * @return desc
+	 * @return desc 
 	 */
 	public String getDescription() {
 		return this.ds.getDescription();
@@ -247,7 +247,7 @@ public class WrappedDerbyDataSource implements ConnectionPoolDataSource,
 	 * 
 	 * getReference
 	 * @return ref
-	 * @throws NamingException
+	 * @throws NamingException if anything goes wrong
 	 */
 	public Reference getReference() throws NamingException {
 		return this.ds.getReference();

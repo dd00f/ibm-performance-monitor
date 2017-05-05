@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -13,6 +12,7 @@ import org.mockito.Mockito;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.PreparedStatement;
 
 public class ProfiledBoundStatementTest {
@@ -50,7 +50,7 @@ public class ProfiledBoundStatementTest {
     @Test
     @Ignore
     public void testSetDateIntDate() {
-        Date v = new Date();
+        LocalDate v = LocalDate.fromMillisSinceEpoch(System.currentTimeMillis());
         statement.setDate( 1, v );
         assertArrayEquals( new String[] { "1", v.toString() }, statement.getArgumentList() );
     }

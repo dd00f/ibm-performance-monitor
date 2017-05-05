@@ -68,9 +68,10 @@ public class WrappedResultSet implements ResultSet {
 	/**
 	 * 
 	 * wrapResultSet
-	 * @param resultSet
-	 * @param currentRef
-	 * @param jdbcEvent
+	 * @param resultSet the result set
+	 * @param currentRef the reference number
+	 * @param jdbcEvent the jdbc event
+	 * @param statement the statement
 	 * @return the wrapped result set
 	 */
 	public static ResultSet wrapResultSet(ResultSet resultSet,
@@ -89,9 +90,9 @@ public class WrappedResultSet implements ResultSet {
 
 	/**
 	 * ctor
-	 * @param resultSet
-	 * @param reference
-	 * @param event
+	 * @param resultSet the result set
+	 * @param reference the reference number
+	 * @param event the event
 	 */
 	public WrappedResultSet(ResultSet resultSet, String reference,
 			JdbcEvent event) {

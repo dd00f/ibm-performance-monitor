@@ -38,7 +38,7 @@ public final class JdbcEventQueue {
 	/**
 	 * 
 	 * enqueue
-	 * @param events
+	 * @param events the events to queue
 	 */
 	public void enqueue(JdbcEvent[] events) {
 		if (LOG.isLoggable(Level.FINE)) {

@@ -61,7 +61,7 @@ public class ProfiledSessionTest {
     @Test
     public void testExecuteAsyncString() {
         ResultSetFuture executeAsync = session.executeAsync( "test" );
-        assertThat( executeAsync, CoreMatchers.is( ProfiledResultSetFuture.class ) );
+        assertThat( executeAsync, CoreMatchers.instanceOf(ProfiledResultSetFuture.class ) );
         Mockito.verify( mock ).executeAsync( "test" );
     }
 
@@ -69,7 +69,7 @@ public class ProfiledSessionTest {
     public void testExecuteAsyncStatement() {
         Statement statement = Mockito.mock( Statement.class );
         ResultSetFuture executeAsync = session.executeAsync( statement );
-        assertThat( executeAsync, CoreMatchers.is( ProfiledResultSetFuture.class ) );
+        assertThat( executeAsync, CoreMatchers.instanceOf( ProfiledResultSetFuture.class ) );
         Mockito.verify( mock ).executeAsync( statement );
     }
 
@@ -78,7 +78,7 @@ public class ProfiledSessionTest {
         Object[] params = new Object[] { "1", "2" };
         ResultSetFuture executeAsync = session.executeAsync( "test", params );
         Mockito.verify( mock ).executeAsync( "test", params );
-        assertThat( executeAsync, CoreMatchers.is( ProfiledResultSetFuture.class ) );
+        assertThat( executeAsync, CoreMatchers.instanceOf( ProfiledResultSetFuture.class ) );
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ProfiledSessionTest {
     public void testPrepareString() {
         PreparedStatement prepare = session.prepare( "test" );
         Mockito.verify( mock ).prepare( "test" );
-        assertThat( prepare, CoreMatchers.is( ProfiledPreparedStatement.class ) );
+        assertThat( prepare, CoreMatchers.instanceOf( ProfiledPreparedStatement.class ) );
     }
 
     @Test
@@ -123,14 +123,14 @@ public class ProfiledSessionTest {
         RegularStatement statement = Mockito.mock( RegularStatement.class );
         PreparedStatement prepare = session.prepare( statement );
         Mockito.verify( mock ).prepare( statement );
-        assertThat( prepare, CoreMatchers.is( ProfiledPreparedStatement.class ) );
+        assertThat( prepare, CoreMatchers.instanceOf( ProfiledPreparedStatement.class ) );
     }
 
     @Test
     public void testPrepareAsyncString() {
         ListenableFuture<PreparedStatement> prepare = session.prepareAsync( "test" );
         Mockito.verify( mock ).prepareAsync( "test" );
-        assertThat( prepare, CoreMatchers.is( ProfiledListenableFutureForPreparedStatement.class ) );
+        assertThat( prepare, CoreMatchers.instanceOf( ProfiledListenableFutureForPreparedStatement.class ) );
     }
 
     @Test
@@ -138,7 +138,7 @@ public class ProfiledSessionTest {
         RegularStatement statement = Mockito.mock( RegularStatement.class );
         ListenableFuture<PreparedStatement> prepare = session.prepareAsync( statement );
         Mockito.verify( mock ).prepareAsync( statement );
-        assertThat( prepare, CoreMatchers.is( ProfiledListenableFutureForPreparedStatement.class ) );
+        assertThat( prepare, CoreMatchers.instanceOf( ProfiledListenableFutureForPreparedStatement.class ) );
     }
 
 }

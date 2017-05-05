@@ -81,10 +81,18 @@ public class CsvPerformanceLogsToFilePrinterTest {
 
 		str = in.readLine();
 		assertEquals("Name,Number of calls,Average Duration milliseconds,Minimum Duration milliseconds,Maximum Duration milliseconds,Total Duration milliseconds,Average Size,Maximum Size,Total Size,Cache enabled count,Cache hit count, Error count", str);
-		str = in.readLine();
-		assertEquals("testActive,1,123.000,123,123,123.000,0.000,0,0.000,0,0,0", str);
-		str = in.readLine();
-		assertEquals("testInactive,1,456.000,456,456,456.000,0.000,0,0.000,0,0,0", str);
+		
+		String strActive = in.readLine();
+		String strInactive = in.readLine();
+		
+		if(strActive.startsWith("testInactive")) {
+		    str = strInactive;
+		    strInactive = strActive;
+		    strActive = str;
+		}
+		
+		assertEquals("testActive,1,123.000,123,123,123.000,0.000,0,0.000,0,0,0", strActive);
+		assertEquals("testInactive,1,456.000,456,456,456.000,0.000,0,0.000,0,0,0", strInactive);
 		str = in.readLine();
 		assertEquals(null, str);
 		

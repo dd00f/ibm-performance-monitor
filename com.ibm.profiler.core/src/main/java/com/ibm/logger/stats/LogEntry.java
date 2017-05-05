@@ -63,6 +63,7 @@ public class LogEntry implements LogEntryMXBean {
      * increment a log counter and increase total with the new value
      * 
      * @param value Amount to increase the total value
+     * @return true.
      * */
     public boolean addValue( long value ) {
         numCalls.getAndAdd( 1 );
@@ -77,7 +78,10 @@ public class LogEntry implements LogEntryMXBean {
     }
 
     /**
+     * Increment the counters to add the time it took to process a request.
      * @param processed the time it took to process the request
+     * @param failed was the request failed.
+     * @return true.
      * */
     public boolean addValue( long processed, boolean failed ) {
         if ( failed ) {
@@ -262,8 +266,9 @@ public class LogEntry implements LogEntryMXBean {
     }
 
     /**
-     * 
+     * Stop a request execution, measure the time it took and increment counters.
      * @param endTime End time use for calculation of total time spend.
+     * @return true if the stop operation was successful. False if no corresponding startTimer could be found.
      */
     public boolean stopTimer( long endTime ) {
         if ( !inFlight.get() ) {

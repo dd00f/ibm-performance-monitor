@@ -233,7 +233,7 @@ public class ProfilingUtilities {
         }
 
         OperationMetric metric = null;
-        if ( CassandraLogger.METRIC_GATHERER.isLoggable() ) {
+        if ( CassandraLogger.LOG_GATHERER.isEnabled() ) {
             try {
                 metric = new OperationMetric();
                 String[] orderedKeyValues = arguments;
@@ -241,7 +241,7 @@ public class ProfilingUtilities {
                 metric.startOperation( operationName, false, orderedKeyValues );
                 MetricFileLoader.adjustCassandraMetric(metric);
                 
-                CassandraLogger.METRIC_GATHERER.gatherMetricEntryLog(metric);
+                CassandraLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
                 
             } catch ( Throwable ex ) {
                 LoggingHelper.logUnexpectedException( LOGGER, CLASSNAME, METHODNAME, ex );
@@ -287,7 +287,7 @@ public class ProfilingUtilities {
                 metric.stopOperation( responseSize, wasCacheHit );
                 
 
-                CassandraLogger.METRIC_GATHERER.gatherMetric( metric );
+                CassandraLogger.LOG_GATHERER.gatherMetric( metric );
                 
                 metric.setOperationName("Cassandra_All_Operations");
                 PerformanceLogger.increase(metric);

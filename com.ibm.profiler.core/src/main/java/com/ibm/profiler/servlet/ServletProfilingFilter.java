@@ -41,8 +41,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import com.ibm.commerce.cache.CacheUtilities;
-import com.ibm.commerce.cache.LogMetricGatherer;
+import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.LoggingHelper;
+import com.ibm.commerce.cache.MetricGatherer;
 import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.logger.PerformanceLogger;
 import com.ibm.service.detailed.ServletLogger;
@@ -86,15 +87,15 @@ public class ServletProfilingFilter implements Filter {
 	private static final Logger LOGGER = LoggingHelper.getLogger(CLASSNAME);
 
 	/**
-	 * 
-	 * @param isInitialRequest 
+	 * Fetch the log gatherer used to measure the request.
+	 * @param isInitialRequest Is this the first request to hit the servlet engine or an internal include/forward request.
 	 * @return The log gatherer used for this servlet profiler.
 	 */
-	public LogMetricGatherer getLogGatherer(boolean isInitialRequest) {
+	public ILogMetricGatherer getLogGatherer(boolean isInitialRequest) {
 	    if( isInitialRequest ) {
-	        return ServletEntryLogger.GATHERER;
+	        return ServletEntryLogger.LOG_GATHERER;
 	    }
-		return ServletLogger.GATHERER;
+		return ServletLogger.LOG_GATHERER;
 	}
 
 	/**
@@ -225,7 +226,7 @@ public class ServletProfilingFilter implements Filter {
 	public static void logMetric(ServletRequest servletRequest,
 			ServletResponse servletResponse, OperationMetric metric,
 			int startSize, boolean sizeMeasurementEnabled,
-			LogMetricGatherer logGatherer, boolean successful) {
+			MetricGatherer logGatherer, boolean successful) {
 		final String METHODNAME = "logMetric(ServletRequest servletRequest,"
 				+ "ServletResponse servletResponse, OperationMetric metric,int startSize, "
 				+ "boolean sizeMeasurementEnabled, MetricGatherer gatherer, boolean successful)";
@@ -355,7 +356,6 @@ public class ServletProfilingFilter implements Filter {
 
 		SortedMap<String, String[]> keyValueSortedMap = new TreeMap<String, String[]>();
 
-		@SuppressWarnings("unchecked")
 		Map<String, String[]> parameterMap = request.getParameterMap();
 
 		keyValueSortedMap.putAll(parameterMap);
@@ -410,7 +410,7 @@ public class ServletProfilingFilter implements Filter {
 	 * @return true if response size measurement is enabled
 	 */
 	public boolean isResponseSizeMeasurementEnabled(boolean isInitialRequest) {
-		return getLogGatherer(isInitialRequest).getLogger().isLoggable(Level.FINEST);
+		return ServletLogger.LOGGER.isLoggable(Level.FINEST);
 	}
 
 	/**
@@ -423,7 +423,7 @@ public class ServletProfilingFilter implements Filter {
 	 * @return True if the request is measured.
 	 */
 	public boolean isMeasurementEnabledForRequest(ServletRequest servletRequest, boolean isInitialRequest) {
-		return getLogGatherer(isInitialRequest).isLoggable();
+		return getLogGatherer(isInitialRequest).isEnabled();
 	}
 
 	/**

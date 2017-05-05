@@ -606,6 +606,7 @@ public class TraceUtilitiesTest {
 
     @Test
     public void testTraceAndMeasureJoinPointWithLogger() {
+        ApplyTraceAspect.printReturnValue = true;
         FakeClassWithAspect.SERVICE_LOGGER.setLevel( Level.FINER );
 
         classWithAspect.methodWithServiceLogger();
@@ -632,7 +633,6 @@ public class TraceUtilitiesTest {
         Assert.assertThat( message, new Contains( "return=\"Hello to you too\"" ) );
     }
 
-    @SuppressWarnings( "unchecked" )
     @Test
     public void testTraceAndMeasureJoinPointWithLoggerDontPrint() {
         ApplyTraceAspect.printReturnValue = false;

@@ -40,7 +40,7 @@ public class WrappedDB2PooledConnection extends WrappedPooledConnection {
 
 	/**
 	 * ctor
-	 * @param pooledConn
+	 * @param pooledConn the connection to wrap
 	 */
 	public WrappedDB2PooledConnection(PooledConnection pooledConn) {
 		super(pooledConn);

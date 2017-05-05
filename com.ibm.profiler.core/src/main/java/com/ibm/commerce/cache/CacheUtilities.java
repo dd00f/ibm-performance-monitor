@@ -379,7 +379,7 @@ public class CacheUtilities {
 
     /**
      * escape the following characters out of any string : ".:," as well as
-     * "\n\r\t" by leveraging the characters "&;"
+     * "\n\r\t" by leveraging the characters "&amp;;"
      * 
      * @param currentString
      *            the string to escape
@@ -403,7 +403,7 @@ public class CacheUtilities {
 
     /**
      * Unescape the following characters out of any string : ".:," as well as
-     * "\n\r\t" by leveraging the characters "&;"
+     * "\n\r\t" by leveraging the characters "&amp;;"
      * 
      * @param currentString
      *            the escaped string
@@ -467,7 +467,7 @@ public class CacheUtilities {
 
     /**
      * escape the following characters out of any string : ".:," as well as
-     * "\n\r\t" by leveraging the characters "&;"
+     * "\n\r\t" by leveraging the characters "&amp;;"
      * 
      * @param writer
      *            the writer to use
@@ -891,7 +891,7 @@ public class CacheUtilities {
      *            the builder to write into
      * @param str
      *            string to parse
-     * @throws IOException
+     * @throws IOException if anything goes wrong in the writer.
      */
     public static void printXmlEscapedStringToWriter( Writer builder, String str ) throws IOException {
         if ( str != null ) {

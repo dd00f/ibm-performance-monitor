@@ -2,7 +2,9 @@ package com.ibm.service.detailed;
 
 import java.util.logging.Logger;
 
+import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.LogMetricGatherer;
+import com.ibm.commerce.cache.LogMetricGathererManager;
 import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.commerce.cache.PrefixedNameCache;
 
@@ -13,9 +15,14 @@ public class TaskLogger {
 	public static final Logger LOGGER = Logger.getLogger(TaskLogger.class
 			.getName());
 
+	/**
+	 * @deprecated Use LOG_GATHERER instead.
+	 */
 	public static final LogMetricGatherer GATHERER = new LogMetricGatherer(
 			LOGGER);
 
+	public static final ILogMetricGatherer LOG_GATHERER = LogMetricGathererManager.getLogMetricGatherer(TaskLogger.class);
+	
 	private static final PrefixedNameCache TASK_NAME_CACHE = new PrefixedNameCache(
 			"Task : ");
 
@@ -43,7 +50,7 @@ public class TaskLogger {
 			int resultSize = 1000;
 			boolean cacheEnabled = false;
 			metric.stopOperation(resultSize, cacheEnabled, successful);
-			GATHERER.gatherMetric(metric);
+			LOG_GATHERER.gatherMetric(metric);
 		}
 	}
 
@@ -62,13 +69,13 @@ public class TaskLogger {
 			String prefixedTaskName = TASK_NAME_CACHE.getPrefixedName(taskName);
 			boolean cacheHit = false;
 			metric.startOperation(prefixedTaskName, cacheHit);
-			GATHERER.gatherMetricEntryLog(metric);
+			LOG_GATHERER.gatherMetricEntryLog(metric);
 		}
 		return metric;
 	}
 
 	private static boolean isMeasurementEnabled() {
-		return GATHERER.isLoggable();
+		return LOG_GATHERER.isEnabled();
 	}
 
 }

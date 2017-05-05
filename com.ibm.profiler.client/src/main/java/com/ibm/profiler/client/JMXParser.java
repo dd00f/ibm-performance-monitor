@@ -47,7 +47,7 @@ public class JMXParser {
     public static String SUPPRESS_OUTPUT = "SuppressOutput";
 
     /**
-     * @param args
+     * @param args arguments
      */
     public static void main( String[] args ) {
         String host = "gdhape01.svl.ibm.com";
@@ -121,7 +121,7 @@ public class JMXParser {
     }
 
     /**
-     * 
+     * print usage
      */
     private static void usage() {
         System.out.println( "JMXParser -host <hostname> -port <port> -service <service Name> -suppressEmpty -debug -messageFabric -performanceLogger" );
@@ -137,10 +137,10 @@ public class JMXParser {
      * 
      * @return The array of JMXStatistics
      * 
-     * @throws InstanceNotFoundException
-     * @throws IntrospectionException
-     * @throws ReflectionException
-     * @throws IOException
+     * @throws InstanceNotFoundException if the bean isn't found.
+     * @throws IntrospectionException  if the bean isn't found.
+     * @throws ReflectionException if the bean isn't found.
+     * @throws IOException if the bean isn't found.
      */
     public List<JMXStatistic> parse( MBeanServerConnection conn, Set<ObjectInstance> queryMBeans, HashMap<String, Boolean> dspProps ) throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
         List<JMXStatistic> stats = new ArrayList<JMXStatistic>();

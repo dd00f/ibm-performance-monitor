@@ -53,7 +53,7 @@ public class WrappedPooledConnection implements PooledConnection {
 
 	/**
 	 * ctor
-	 * @param pooledConn
+	 * @param pooledConn the PooledConnection
 	 */
 	public WrappedPooledConnection(PooledConnection pooledConn) {
 		this.pooledConnection = pooledConn;
@@ -131,7 +131,7 @@ public class WrappedPooledConnection implements PooledConnection {
         if( JdbcProfiler.isProfilingEnabled()) {
             metric = new OperationMetric();
             metric.startOperation("JDBC_PooledConnection_getConnection", false);
-            JdbcLogger.LOG_GATHERER.gatherMetricEntryLog(metric);
+            JdbcLogger.GATHERER.gatherMetricEntryLog(metric);
         }
         try
         {
@@ -142,7 +142,7 @@ public class WrappedPooledConnection implements PooledConnection {
         {
             if( metric != null ) {
                 metric.stopOperation(1, false, success);
-                JdbcLogger.LOG_GATHERER.gatherMetric(metric);
+                JdbcLogger.GATHERER.gatherMetric(metric);
             }
         }
         return returnedValue;

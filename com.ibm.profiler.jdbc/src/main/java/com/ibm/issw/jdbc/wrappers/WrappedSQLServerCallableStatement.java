@@ -26,9 +26,11 @@ public class WrappedSQLServerCallableStatement extends WrappedCallableStatement 
 
     /**
      * 
-     * @param statement
-     * @param sql
-     * @param ref
+     * @param statement the statement
+     * @param sql the sql to run
+     * @param ref the reference number
+     * @param transaction the transaction
+     * @param connection the connection
      */
     public WrappedSQLServerCallableStatement(ISQLServerCallableStatement statement, String sql, String ref, String transaction, Connection connection)
     {

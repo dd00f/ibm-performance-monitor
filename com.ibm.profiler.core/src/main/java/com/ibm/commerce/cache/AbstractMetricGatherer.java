@@ -391,7 +391,8 @@ public abstract class AbstractMetricGatherer implements DirectMetricGather {
 	 * 
 	 * @return true if metrics can be gathered.
 	 */
-	protected boolean isEnabled() {
+	@Override
+    public boolean isEnabled() {
 		return true;
 	}
 

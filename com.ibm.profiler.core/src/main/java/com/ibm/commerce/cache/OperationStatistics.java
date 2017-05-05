@@ -211,6 +211,7 @@ public class OperationStatistics implements TimeInterval {
      * @param resultSize The result size.
      * @param operationCacheEnabled Was operation cache enabled.
      * @param resultFetchedFromCache Was result fetched from cache.
+     * @param successful is the request successful.
      */
     public synchronized void logStatistic( long duration, int resultSize, boolean operationCacheEnabled, boolean resultFetchedFromCache, boolean successful) {
         ++callCount;

@@ -215,8 +215,8 @@ public class WrappedStatement implements Statement {
 	/**
 	 * 
 	 * setEscapeProcessingfinal
-	 * @param enable
-	 * @throws SQLException
+	 * @param enable enable escape processing
+	 * @throws SQLException if anything goes wrong.
 	 */
 	public final void setEscapeProcessingfinal(boolean enable)
 			throws SQLException {

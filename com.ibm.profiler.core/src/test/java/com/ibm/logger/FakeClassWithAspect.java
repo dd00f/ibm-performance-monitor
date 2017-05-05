@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import com.ibm.logger.trace.Print;
 import com.ibm.logger.trace.PrintMode;
 
+@SuppressWarnings("unused")
 public class FakeClassWithAspect {
 
     public static Logger LOGGER = Logger.getLogger( FakeClassWithAspect.class.getName() );
@@ -34,6 +35,7 @@ public class FakeClassWithAspect {
     public String methodWithTrace( String arg1, String arg2, int arg3, int[] arg4 ) {
         return "Hello world2";
     }
+
 
     @com.ibm.logger.trace.Print( PrintMode.MASK )
     @Dummy

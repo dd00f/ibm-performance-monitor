@@ -43,7 +43,7 @@ public class WrappedDB2Connection extends WrappedConnection implements DB2Connec
 
 	/**
 	 * ctor
-	 * @param connection
+	 * @param connection the connection
 	 */
 	public WrappedDB2Connection(DB2Connection connection) {
 		super(connection);

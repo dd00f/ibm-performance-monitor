@@ -17,30 +17,31 @@ import javax.management.ObjectInstance;
 public interface JMXStatistic extends Comparable<Object> {
 
     /**
-     * @param conn
-     * @param mbean
-     * @param one
-     * @return
+     * 
+     * @param conn connection
+     * @param mbean bean info
+     * @param one the object instance
+     * @return the JMX statistics
      */
     public JMXStatistic parse( MBeanServerConnection conn, MBeanInfo mbean, ObjectInstance one );
 
     /**
-     * @return
+     * @return are the statistics empty
      */
     public boolean isEmpty();
 
     /**
-     * @return
+     * @return get the statistics key
      */
     public JMXStatisticKey getKey();
 
     /**
-     * 
+     * write a header
      */
     public void doHeader();
 
     /**
-     * 
+     * write details.
      */
     public void doDetail();
 

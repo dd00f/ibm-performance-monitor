@@ -25,8 +25,8 @@ public class WrappedSQLServerPooledConnection extends WrappedPooledConnection {
 
 	/**
 	 * Wrap a SQL server connection
-	 * @param conn
-	 * @return
+	 * @param conn the connection
+	 * @return the wrapped connection
 	 */
 	public static Connection wrapSqlServerConnection(Connection conn) {
 		if ((conn instanceof WrappedConnection)) {

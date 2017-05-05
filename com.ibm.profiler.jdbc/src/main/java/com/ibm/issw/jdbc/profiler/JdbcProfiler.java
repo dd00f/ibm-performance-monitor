@@ -142,8 +142,8 @@ public final class JdbcProfiler {
 	 * 
 	 * start
 	 * 
-	 * @param operation
-	 * @param objRef
+	 * @param operation the operation
+	 * @param objRef the reference string
 	 */
 	public void start(String operation, String objRef) {
 
@@ -165,8 +165,8 @@ public final class JdbcProfiler {
 	 * 
 	 * stop
 	 * 
-	 * @param operation
-	 * @param objRef
+     * @param operation the operation
+     * @param objRef the reference string
 	 */
 	public void stop(String operation, String objRef) {
 		if (profilingEnabled) {
@@ -251,7 +251,7 @@ public final class JdbcProfiler {
 	 * 
 	 * getJdbcEvent
 	 * 
-	 * @param objRef
+     * @param objRef the reference string
 	 * @return the event.
 	 */
 	public JdbcEvent getJdbcEvent(String objRef) {
@@ -269,8 +269,9 @@ public final class JdbcProfiler {
 	 * 
 	 * addSqlStatement
 	 * 
-	 * @param sql
-	 * @param objRef
+	 * @param sql the sql
+	 * @param objRef the execution reference
+	 * @param transactionId the transactionID
 	 */
 	public void addSqlStatement(String sql, String objRef, String transactionId) {
 		if (profilingEnabled) {
@@ -284,8 +285,9 @@ public final class JdbcProfiler {
 	 * 
 	 * addRowsUpdated
 	 * 
-	 * @param rows
-	 * @param objRef
+	 * @param rows rows updated
+	 * @param objRef the execution reference
+	 * @param success was the execution successful
 	 */
 	public void addRowsUpdated(int rows, String objRef, boolean success) {
 		if (profilingEnabled) {
@@ -309,8 +311,8 @@ public final class JdbcProfiler {
 	 * 
 	 * addTableNames
 	 * 
-	 * @param names
-	 * @param objRef
+	 * @param names table names
+	 * @param objRef the execution reference
 	 */
 	public void addTableNames(String[] names, String objRef) {
 		if (profilingEnabled) {
@@ -328,8 +330,9 @@ public final class JdbcProfiler {
 	 * 
 	 * addRowsRead
 	 * 
-	 * @param rows
-	 * @param objRef
+	 * @param rows row count
+	 * @param objRef the execution reference
+	 * @param success was the insertion successful
 	 */
 	public void addRowsRead(int rows, String objRef, boolean success) {
 		if (profilingEnabled) {
@@ -353,8 +356,8 @@ public final class JdbcProfiler {
 	 * 
 	 * logEvent
 	 * 
-	 * @param event
-	 * @param success 
+	 * @param event the event
+	 * @param success  was it a success
 	 */
 	public void logEvent(JdbcEvent event, boolean success) {
 		if (eventMeasurementEnabled) {
@@ -431,7 +434,7 @@ public final class JdbcProfiler {
 		    metric.setProperty(JdbcProfiler.TRANSACTION_ID, transactionIdentifier);
 		}
 
-		JdbcLogger.LOG_GATHERER.gatherMetric(metric, true);
+		JdbcLogger.GATHERER.gatherMetric(metric);
 
 		// increase metrics of all JDBC operations put together.
 		metric.setOperationName(JDBC_ALL_OPERATIONS);
@@ -450,7 +453,7 @@ public final class JdbcProfiler {
 	 * 
 	 * isSelectStatement
 	 * 
-	 * @param operationName
+	 * @param operationName the operation name
 	 * @return true if it's a select
 	 */
 	public static boolean isSelectStatement(String operationName) {
@@ -504,8 +507,8 @@ public final class JdbcProfiler {
 	 * 
 	 * setStatementType
 	 * 
-	 * @param type
-	 * @param objRef
+	 * @param type the statement type
+	 * @param objRef the execution reference
 	 */
 	public void setStatementType(String type, String objRef) {
 		if (profilingEnabled) {
@@ -518,7 +521,7 @@ public final class JdbcProfiler {
 	 * 
 	 * addStack
 	 * 
-	 * @param objRef
+	 * @param objRef the execution reference
 	 */
 	public void addStack(String objRef) {
 		if (profilingEnabled && stackCaptureEnabled) {
@@ -534,9 +537,9 @@ public final class JdbcProfiler {
 	 * 
 	 * addSetData
 	 * 
-	 * @param index
-	 * @param data
-	 * @param objRef
+	 * @param index the index
+	 * @param data the data
+	 * @param objRef the execution reference
 	 */
 	public void addSetData(int index, Object data, String objRef) {
 		final String methodName = "addSetData(int index, Object data, String objRef)";
@@ -565,7 +568,7 @@ public final class JdbcProfiler {
 	 * 
 	 * setStackCaptureEnabled
 	 * 
-	 * @param stack_capture_enabled
+	 * @param stack_capture_enabled set stack captured enable
 	 */
 	public static void setStackCaptureEnabled(boolean stack_capture_enabled) {
 		stackCaptureEnabled = stack_capture_enabled;
@@ -595,7 +598,7 @@ public final class JdbcProfiler {
 	 * 
 	 * setProfilingEnabled
 	 * 
-	 * @param enabled
+	 * @param enabled is profiling enabled
 	 */
 	public static void setProfilingEnabled(boolean enabled) {
 		getInstance().clearPendingEvents();
@@ -665,7 +668,7 @@ public final class JdbcProfiler {
 		 * 
 		 * addEvent
 		 * 
-		 * @param event
+		 * @param event the event
 		 */
 		public void addEvent(JdbcEvent event) {
 			super.get().add(event);
