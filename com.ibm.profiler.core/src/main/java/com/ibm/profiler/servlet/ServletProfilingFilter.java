@@ -160,11 +160,12 @@ public class ServletProfilingFilter implements Filter {
 			LOGGER.entering(CLASSNAME, METHODNAME, parameters);
 		}
 
-		boolean parentIdUpdated = true;
+		boolean parentIdUpdated = false;
 		Long threadParentOperationIdentifier = OperationMetric
 				.getThreadParentOperationIdentifier();
 		if (threadParentOperationIdentifier.longValue() == 0
 				&& servletRequest instanceof HttpServletRequest) {
+		    parentIdUpdated = true;
 			CacheUtilities
 					.updateOperationParentIdentifierFromHeader((HttpServletRequest) servletRequest);
 		}

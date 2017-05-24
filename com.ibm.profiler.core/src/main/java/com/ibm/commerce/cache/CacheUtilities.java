@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1240,5 +1242,32 @@ public class CacheUtilities {
             returnValue[i] = deepSafeToString(objectArray[i]);
         }
         return returnValue;
+    }
+    
+    /**
+     * Convert a map of string to a list of key-value pair list.
+     * @param map the input map/
+     * @return The converted list.
+     */
+    public static List<String> convertStringMapToList(Map<String,String> map) {
+        List<String> returnValue = new ArrayList<String>();
+        appendMapToKeyValuePairList(map, returnValue);
+        return returnValue;
+        
+    }
+
+    /**
+     * Append a map to a key value pair list
+     * @param map the map to append.
+     * @param listToAppend the list in which to append the values.
+     */
+    public static void appendMapToKeyValuePairList(Map<String, String> map, List<String> listToAppend)
+    {
+        Set<Entry<String, String>> entrySet = map.entrySet();
+        for (Entry<String, String> entry : entrySet)
+        {
+            listToAppend.add(entry.getKey());
+            listToAppend.add(entry.getValue());
+        }
     }
 }
