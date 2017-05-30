@@ -1,20 +1,17 @@
 /*
- * #%L
- * IBM 10x
+ * Copyright 2017 Steve McDuff
  * 
- * IBM Confidential
- * OCO Source Materials
- * %%
- * Copyright (C) 2013 - 2015 IBM Corp.
- * %%
- * The source code for this program is not published or otherwise divested of
- * its trade secrets, irrespective of what has been deposited with the U.S.
- * Copyright Office.  IBM and the IBM logo are trademarks of IBM Corporation
- * in the United States other countries, or both.  Java and all Java-based
- * trademarks and logos are trademarks or registered trademarks of Oracle
- * and/or its affiliates. Other company, product or service names may be
- * trademarks or service marks of others.
- * #L%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.ibm.profiler.mongo;
 
@@ -37,23 +34,26 @@ import com.mongodb.client.MongoIterable;
  */
 public class ProfiledMongoClient
 {
-    
+
     private final MongoClient client;
-    
+
     public ProfiledMongoClient(MongoClient client)
     {
         super();
         this.client = client;
     }
-    
+
     /**
      * Gets the options that this client uses to connect to server.
      *
-     * <p>Note: {@link MongoClientOptions} is immutable.</p>
+     * <p>
+     * Note: {@link MongoClientOptions} is immutable.
+     * </p>
      *
      * @return the options
      */
-    public MongoClientOptions getMongoClientOptions() {
+    public MongoClientOptions getMongoClientOptions()
+    {
         return client.getMongoClientOptions();
     }
 
@@ -61,58 +61,62 @@ public class ProfiledMongoClient
      * Gets the list of credentials that this client authenticates all connections with
      *
      * @return the list of credentials
-     * @since 2.11.0
      */
-    public List<MongoCredential> getCredentialsList() {
+    public List<MongoCredential> getCredentialsList()
+    {
         return client.getCredentialsList();
     }
 
     /**
      * Get a list of the database names
      *
-     * @mongodb.driver.manual reference/command/listDatabases List Databases
      * @return an iterable containing all the names of all the databases
-     * @since 3.0
      */
-    public MongoIterable<String> listDatabaseNames() {
-       return client.listDatabaseNames();
+    public MongoIterable<String> listDatabaseNames()
+    {
+        return client.listDatabaseNames();
     }
 
     /**
      * Gets the list of databases
      *
      * @return the list of databases
-     * @since 3.0
      */
-    public ListDatabasesIterable<Document> listDatabases() {
+    public ListDatabasesIterable<Document> listDatabases()
+    {
         return listDatabases(Document.class);
     }
 
     /**
      * Gets the list of databases
      *
-     * @param clazz the class to cast the database documents to
-     * @param <T>   the type of the class to use instead of {@code Document}.
+     * @param clazz
+     *            the class to cast the database documents to
+     * @param <T>
+     *            the type of the class to use instead of {@code Document}.
      * @return the list of databases
-     * @since 3.0
      */
-    public <T> ListDatabasesIterable<T> listDatabases(final Class<T> clazz) {
+    public <T> ListDatabasesIterable<T> listDatabases(final Class<T> clazz)
+    {
         return client.listDatabases(clazz);
     }
 
     /**
      * Get a database by name.
      * 
-     * @param databaseName the name of the database to retrieve
+     * @param databaseName
+     *            the name of the database to retrieve
      * @return a {@code MongoDatabase} representing the specified database
-     * @throws IllegalArgumentException if databaseName is invalid
+     * @throws IllegalArgumentException
+     *             if databaseName is invalid
      * @see MongoNamespace#checkDatabaseNameValidity(String)
      */
-    public MongoDatabase getDatabase(final String databaseName) {
-        
+    public MongoDatabase getDatabase(final String databaseName)
+    {
+
         MongoDatabase database = client.getDatabase(databaseName);
         ProfiledMongoDatabase profiledDatabase = new ProfiledMongoDatabase(database);
         return profiledDatabase;
-        
+
     }
 }

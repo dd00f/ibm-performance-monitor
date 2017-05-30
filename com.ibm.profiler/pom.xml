@@ -43,6 +43,7 @@
 		<module>../com.ibm.profiler.cassandra</module>
 		<module>../com.ibm.profiler.jdbc</module>
 		<module>../com.ibm.profiler.client</module>
+		<module>../com.ibm.profiler.mongo</module>
 	</modules>
 
 	<build>
