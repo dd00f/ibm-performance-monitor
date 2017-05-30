@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.LogMetricGatherer;
 import com.ibm.commerce.cache.LogMetricGathererManager;
+import com.ibm.commerce.cache.Markers;
 
 /**
  * 
@@ -40,6 +41,7 @@ public class JdbcLogger {
 
 	/**
 	 * level to measure result size
+	 * @deprecated use GATHER.isEnabled(Marker.RESULT_SIZE);
 	 */
 	public static final Level MEASURE_RESULT_SIZE_LEVEL = Level.FINER;
 
@@ -77,7 +79,7 @@ public class JdbcLogger {
 	 * @return isResultSetSizeMeasured
 	 */
 	public static boolean isResultSetSizeMeasured() {
-		return LOGGER.isLoggable(MEASURE_RESULT_SIZE_LEVEL);
+		return GATHERER.isEnabled(Markers.RESULT_SIZE_MARKER);
 	}
 
 }

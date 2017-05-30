@@ -303,5 +303,11 @@ public class LogMetricGatherer extends AbstractLogMetricGatherer {
         return logger.isLoggable(level)
                 || PerformanceLogger.isEnabled();
     }
+    
+    @Override
+    public boolean isEnabled(String marker)
+    {
+        return isEnabled() && logger.isLoggable(Level.FINEST);
+    }
 
 }

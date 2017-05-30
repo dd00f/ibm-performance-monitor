@@ -2,6 +2,7 @@
  */
 package com.ibm.commerce.cache;
 
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * LogMetricGathererManager
@@ -19,13 +20,16 @@ public class LogMetricGathererManager
         String gathererClass = System.getProperty(GATHERER_FACTORY_CLASS_NAME_PROPERTY);
         LogMetricGathererFactory factory = null;
 
-        try
+        if (!StringUtils.isBlank(gathererClass))
         {
-            factory = (LogMetricGathererFactory) Class.forName(gathererClass).newInstance();
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
+            try
+            {
+                factory = (LogMetricGathererFactory) Class.forName(gathererClass).newInstance();
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
         }
 
         if (factory == null)

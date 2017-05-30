@@ -259,6 +259,15 @@ public class OperationMetric implements IOperationMetric
         }
         return properties.get(key);
     }
+    
+    /**
+     * Get the map of properties (modifiable)
+     * @return The map of properties. May be null.
+     */
+    public Map<String, String> getProperties()
+    {
+        return properties;
+    }
 
     /**
      * prints to property values to a writer

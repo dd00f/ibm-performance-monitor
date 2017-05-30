@@ -56,4 +56,12 @@ public interface MetricGatherer {
 	 * @return true if metric gathering is enabled
 	 */
 	public boolean isEnabled();
+	
+	/**
+	 * Check if certain logging options are enabled.
+	 * 
+	 * @param marker the option marker.
+	 * @return true if the option is enabled.
+	 */
+	public boolean isEnabled(String marker);
 }

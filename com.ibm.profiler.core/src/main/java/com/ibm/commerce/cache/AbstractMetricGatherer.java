@@ -395,6 +395,12 @@ public abstract class AbstractMetricGatherer implements DirectMetricGather {
     public boolean isEnabled() {
 		return true;
 	}
+	
+	@Override
+	public boolean isEnabled(String marker)
+	{
+	    return true;
+	}
 
 	/**
 	 * Attempt to wake the metric gathering thread.

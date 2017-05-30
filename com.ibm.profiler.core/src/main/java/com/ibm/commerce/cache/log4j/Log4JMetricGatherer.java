@@ -1,9 +1,14 @@
 package com.ibm.commerce.cache.log4j;
 
+import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
+import org.apache.logging.log4j.ThreadContext;
 
 import com.ibm.commerce.cache.AbstractLogMetricGatherer;
 import com.ibm.commerce.cache.OperationMetric;
@@ -26,6 +31,8 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 	 * default entry log level
 	 */
 	private static final Level DEFAULT_ENTRY_LOG_LEVEL = Level.TRACE;
+	
+	private static final Marker ENTRY_MARKER = MarkerManager.getMarker("metricEntry");
 
 	/**
 	 * logger to use
@@ -141,7 +148,7 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 	 */
 	@Override
     public void gatherMetricEntryLog(OperationMetric metric) {
-		if (logger.isEnabled(entryLevel)) {
+		if (logger.isEnabled(entryLevel, ENTRY_MARKER)) {
 			logEntryLogMetricToLogger(metric, logger, entryLevel);
 		}
 	}
@@ -230,11 +237,47 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 		}
 
 		if (currentLogger.isEnabled(logLevel)) {
-			String logMessage = formatMetricLog(metric, returnValue, printProperties);
+			// String logMessage = formatMetricLog(metric, returnValue, printProperties);
+		    ThreadContext.put(OperationMetric.FIELD_OPERATION, metric.getOperationName());
+		    List<String> keyValuePairList = metric.getKeyValuePairList();
+		    String parameters = "";
+		    if( keyValuePairList != null ) {
+		        parameters = keyValuePairList.toString();
+		    }
+            ThreadContext.put(OperationMetric.FIELD_PARAMETERS, parameters);
+		    ThreadContext.put(OperationMetric.FIELD_ID, Long.toString(metric.getIdentifier()));
+		    ThreadContext.put(OperationMetric.FIELD_PARENT_ID, Long.toString(metric.getParentIdentifier()));
+            ThreadContext.put(OperationMetric.FIELD_START_TIME, Long.toString(metric.getStartTime()));
+            ThreadContext.put(OperationMetric.FIELD_STOP_TIME, Long.toString(metric.getStopTime()));
+            ThreadContext.put(OperationMetric.FIELD_DURATION, Long.toString(metric.getDuration()));
+            ThreadContext.put(OperationMetric.FIELD_DURATION_MS, Long.toString(metric.getDuration()/1000000));
+            ThreadContext.put(OperationMetric.FIELD_RESULT_SIZE, Integer.toString(metric.getResultSize()));
+            ThreadContext.put(OperationMetric.FIELD_CACHE_HIT, Boolean.toString(metric.isResultFetchedFromCache()));
+            ThreadContext.put(OperationMetric.FIELD_CACHE_ENABLED, Boolean.toString(metric.isOperationCacheEnabled()));
+            ThreadContext.put(OperationMetric.FIELD_SUCCESSFUL, Boolean.toString(metric.isSuccessful()));
+            
+            Map<String, String> properties = metric.getProperties();
+            CloseableThreadContext.Instance ctx = null;
+            if( properties != null ) {
+                ctx = CloseableThreadContext.putAll(properties);
+            }
 
-			if( logMessage != null ) {
-			    currentLogger.log(logLevel, logMessage);
-			}
+		    currentLogger.log(logLevel, "Performance Log");
+		    if( ctx != null ) {
+		        ctx.close();
+		    }
+
+            ThreadContext.remove(OperationMetric.FIELD_PARAMETERS);
+            ThreadContext.remove(OperationMetric.FIELD_ID);
+            ThreadContext.remove(OperationMetric.FIELD_PARENT_ID);
+            ThreadContext.remove(OperationMetric.FIELD_START_TIME);
+            ThreadContext.remove(OperationMetric.FIELD_STOP_TIME);
+            ThreadContext.remove(OperationMetric.FIELD_DURATION);
+            ThreadContext.remove(OperationMetric.FIELD_DURATION_MS);
+            ThreadContext.remove(OperationMetric.FIELD_RESULT_SIZE);
+            ThreadContext.remove(OperationMetric.FIELD_CACHE_HIT);
+            ThreadContext.remove(OperationMetric.FIELD_CACHE_ENABLED);
+            ThreadContext.remove(OperationMetric.FIELD_SUCCESSFUL);
 		}
 
 		PerformanceLogger.increase(metric);
@@ -250,7 +293,7 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 	 * @param logLevel
 	 *            the level to log
 	 */
-	public static void logEntryLogMetricToLogger(OperationMetric metric,
+	private static void logEntryLogMetricToLogger(OperationMetric metric,
 			Logger currentLogger, Level logLevel) {
 		if (currentLogger == null) {
 			return;
@@ -264,8 +307,7 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 
 		// pass true to write for Entrylog, pass false to write for Exitlog
 		String writeEntryExitLog = OperationMetric.writeEntryExitLog(metric, true);
-        currentLogger.log(logLevel, 
-				writeEntryExitLog);
+        currentLogger.log(logLevel, ENTRY_MARKER, writeEntryExitLog);
 	}
 
 	/*
@@ -301,5 +343,11 @@ public class Log4JMetricGatherer extends AbstractLogMetricGatherer {
 		return logger.isEnabled(level)
 				|| PerformanceLogger.isEnabled();
 	}
+	
+    @Override
+    public boolean isEnabled(String marker)
+    {
+        return isEnabled() && logger.isEnabled(Level.TRACE, MarkerManager.getMarker(marker) );
+    }
 
 }
