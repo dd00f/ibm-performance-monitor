@@ -44,6 +44,16 @@ public class ProfiledMongoClient
     }
 
     /**
+     * Get the original mongo client to access unprofiled APIs.
+     * 
+     * @return The mongo client.
+     */
+    public MongoClient getClient()
+    {
+        return client;
+    }
+
+    /**
      * Gets the options that this client uses to connect to server.
      *
      * <p>
@@ -118,5 +128,14 @@ public class ProfiledMongoClient
         ProfiledMongoDatabase profiledDatabase = new ProfiledMongoDatabase(database);
         return profiledDatabase;
 
+    }
+
+    /**
+     * Closes all resources associated with this instance, in particular any open network connections. Once called, this
+     * instance and any databases obtained from it can no longer be used.
+     */
+    public void close()
+    {
+        client.close();
     }
 }
