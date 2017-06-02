@@ -2,6 +2,5 @@
     <wb-module deploy-name="com.ibm.profiler.mongo">
         <wb-resource deploy-path="/" source-path="/src/main/java"/>
         <wb-resource deploy-path="/" source-path="/.apt_generated"/>
-        <wb-resource deploy-path="/" source-path="/src/test/resources"/>
     </wb-module>
 </project-modules>
