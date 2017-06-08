@@ -1,10 +1,3 @@
-<!--
-    IBM Confidential OCO Source Material
-    5725-F81 (C) COPYRIGHT International Business Machines Corp. 2014
-    The source code for this program is not published or otherwise divested
-    of its trade secrets, irrespective of what has been deposited with the
-    U.S. Copyright Office.
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -14,30 +7,27 @@
 	<packaging>pom</packaging>
 
 	<properties>
-	    <!-- Encoding Properties -->
+		<!-- Encoding Properties -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
-        <!-- Java compiler properties -->
+
+		<!-- Java compiler properties -->
 		<compiler.source.version>1.6</compiler.source.version>
 		<compiler.target.version>1.6</compiler.target.version>
-		
+
 		<!-- Maven Plug-in Version Properties -->
 		<maven.compiler.version>2.3.2</maven.compiler.version>
-		
+		<deploy.plugin.version></deploy.plugin.version>
+
 		<!-- 3rd Party Test Dependency Version Properties -->
 		<junit.version>4.12</junit.version>
 		<apache.commons.lang.3.version>3.1</apache.commons.lang.3.version>
 		<javax.servlet.api.version>3.1.0</javax.servlet.api.version>
 		<org.aspectj.version>1.8.10</org.aspectj.version>
 		<org.mockito.version>1.10.19</org.mockito.version>
-		<org.apache.logging.log4j.version>2.8.2</org.apache.logging.log4j.version>		
+		<org.apache.logging.log4j.version>2.8.2</org.apache.logging.log4j.version>
 	</properties>
-	
-	<distributionManagement>
 
-	</distributionManagement>
-	
 	<modules>
 		<module>../com.ibm.profiler.core</module>
 		<module>../com.ibm.profiler.cassandra</module>
@@ -57,6 +47,17 @@
 					<optimize>true</optimize>
 					<source>${compiler.source.version}</source>
 					<target>${compiler.target.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<!-- 
+				<version>${deploy.plugin.version}</version>
+				 -->
+				<configuration>
+					<skip>false</skip>
+					<deployAtEnd>true</deployAtEnd>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -79,4 +80,19 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<!-- Repositories for distributing artifacts -->
+	<distributionManagement>
+		<repository>
+			<id>b2b-releases-local</id>
+			<name>perf-monitor Software Releases</name>
+			<url>${artifacthost.url}/artifactory/b2b-releases-local/</url>
+		</repository>
+		<snapshotRepository>
+			<id>b2b-snapshots-local</id>
+			<name>perf-monitor Software Snapshots</name>
+			<url>${artifacthost.url}/artifactory/b2b-snapshots-local/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>
