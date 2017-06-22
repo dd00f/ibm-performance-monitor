@@ -57,6 +57,7 @@
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>sqljdbc4</artifactId>
 			<version>4.0</version>
+			<optional>true</optional>
 		</dependency>
 		<!-- 3rd Party Test Dependencies -->
 		<dependency>
