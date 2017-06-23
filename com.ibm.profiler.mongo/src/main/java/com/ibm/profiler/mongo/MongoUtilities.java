@@ -44,6 +44,8 @@ public class MongoUtilities
 
     private static BsonString QUESTION_MARK_BSON = new BsonString("?");
 
+    private static BsonString MULTIPLE_QUESTION_MARK_BSON = new BsonString("*?");
+
     public static List<BsonDocument> filterParameters(List<? extends Bson> documentListToFilter)
     {
         List<BsonDocument> returnValue = new ArrayList<BsonDocument>();
@@ -65,11 +67,36 @@ public class MongoUtilities
         Set<Entry<String, BsonValue>> entrySet = returnValue.entrySet();
         for (Entry<String, BsonValue> entry : entrySet)
         {
+
+            String key = entry.getKey();
             BsonValue value = entry.getValue();
-            entry.setValue(filterValue(value));
+            if (isParameterlessOperationName(key))
+            {
+                // nothing to do.
+            }
+            else if (isArrayOperationName(key) && value instanceof BsonArray)
+            {
+                BsonArray bsonArray = new BsonArray();
+                bsonArray.add(MULTIPLE_QUESTION_MARK_BSON);
+                entry.setValue(bsonArray);
+            }
+            else
+            {
+                entry.setValue(filterValue(value));
+            }
         }
 
         return returnValue;
+    }
+
+    private static boolean isParameterlessOperationName(String key)
+    {
+        return "$lookup".equalsIgnoreCase(key) || "$group".equalsIgnoreCase(key);
+    }
+
+    private static boolean isArrayOperationName(String key)
+    {
+        return "$in".equalsIgnoreCase(key) || "$nin".equalsIgnoreCase(key) || "$all".equalsIgnoreCase(key);
     }
 
     public static BsonValue filterValue(BsonValue value)
@@ -138,8 +165,7 @@ public class MongoUtilities
 
     public static BsonDocument filterParameters(Bson filter)
     {
-        BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class,
-            MongoClient.getDefaultCodecRegistry());
+        BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         return filterParameters(bsonDocument);
     }
 

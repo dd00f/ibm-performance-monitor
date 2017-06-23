@@ -15,6 +15,9 @@
  */
 package com.ibm.profiler.mongo;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import com.ibm.commerce.cache.ILogMetricGatherer;
 import com.ibm.commerce.cache.OperationMetric;
 
@@ -53,6 +56,16 @@ public class TestLogMetricGatherer implements ILogMetricGatherer
     @Override
     public void gatherMetric(OperationMetric metric)
     {
+        StringWriter builder = new StringWriter();
+        try
+        {
+            metric.toSerializedXmlString(builder);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println(builder.getBuffer().toString());
         lastMetric = metric;
     }
 
