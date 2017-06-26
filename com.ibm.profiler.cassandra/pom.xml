@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.ibm.profiler</groupId>
 		<artifactId>com.ibm.profiler</artifactId>
-		<version>1.4.0.0</version>
+		<version>1.4.0.1</version>
 		<relativePath>../com.ibm.profiler</relativePath>
 	</parent>
 
