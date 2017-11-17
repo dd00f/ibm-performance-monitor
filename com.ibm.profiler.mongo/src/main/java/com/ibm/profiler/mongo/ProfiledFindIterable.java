@@ -387,6 +387,7 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
         }
         metric.stopOperation(resultSize, false);
         MongoLogger.GATHERER.gatherMetric(metric);
+        MongoUtilities.incrementMongoStats(metric);
     }
 
     @Override

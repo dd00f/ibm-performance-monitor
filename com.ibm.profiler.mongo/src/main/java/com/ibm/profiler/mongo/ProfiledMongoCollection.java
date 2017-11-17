@@ -103,6 +103,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         }
         metric.stopOperation(resultSize, false);
         MongoLogger.GATHERER.gatherMetric(metric);
+        MongoUtilities.incrementMongoStats(metric);
     }
 
     @Override

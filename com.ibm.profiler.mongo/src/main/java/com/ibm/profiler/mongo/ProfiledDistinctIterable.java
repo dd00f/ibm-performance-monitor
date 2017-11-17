@@ -209,6 +209,7 @@ public class ProfiledDistinctIterable<TDocument, TResult> implements DistinctIte
         }
         metric.stopOperation(resultSize, false);
         MongoLogger.GATHERER.gatherMetric(metric);
+        MongoUtilities.incrementMongoStats(metric);
     }
 
     @Override

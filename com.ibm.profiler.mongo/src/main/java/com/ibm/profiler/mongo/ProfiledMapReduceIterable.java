@@ -291,6 +291,7 @@ public class ProfiledMapReduceIterable<TDocument, TResult> implements MapReduceI
         }
         metric.stopOperation(resultSize, false);
         MongoLogger.GATHERER.gatherMetric(metric);
+        MongoUtilities.incrementMongoStats(metric);
     }
 
     @Override

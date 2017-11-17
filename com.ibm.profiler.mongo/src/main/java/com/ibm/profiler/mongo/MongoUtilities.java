@@ -27,6 +27,8 @@ import org.bson.BsonValue;
 import org.bson.conversions.Bson;
 
 import com.ibm.commerce.cache.CacheUtilities;
+import com.ibm.commerce.cache.OperationMetric;
+import com.ibm.logger.PerformanceLogger;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.IndexModel;
 
@@ -37,6 +39,9 @@ import com.mongodb.client.model.IndexModel;
  */
 public class MongoUtilities
 {
+    
+    public static final String MONGO_ALL_OPERATIONS = "Mongo : All operations";
+    
     public MongoUtilities()
     {
         super();
@@ -177,5 +182,13 @@ public class MongoUtilities
             retVal.add(indexModel.getKeys().toString());
         }
         return retVal;
+    }
+    
+    public static void incrementMongoStats(OperationMetric metric)
+    {
+        String oldName = metric.getOperationName();
+        metric.setOperationName(MONGO_ALL_OPERATIONS);
+        PerformanceLogger.increase(metric);
+        metric.setOperationName(oldName);
     }
 }

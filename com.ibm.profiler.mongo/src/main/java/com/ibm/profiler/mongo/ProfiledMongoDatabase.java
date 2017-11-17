@@ -149,6 +149,7 @@ public class ProfiledMongoDatabase implements MongoDatabase
         }
         metric.stopOperation(resultSize, false);
         MongoLogger.GATHERER.gatherMetric(metric);
+        MongoUtilities.incrementMongoStats(metric);
     }
 
     @Override
@@ -158,7 +159,7 @@ public class ProfiledMongoDatabase implements MongoDatabase
 
         if (MongoLogger.GATHERER.isEnabled())
         {
-            metric = startMetric("runCommand", Arrays.asList("command", command.toString()));
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
         }
         Document runCommand = database.runCommand(command);
         int resultSize = 0;
@@ -177,7 +178,7 @@ public class ProfiledMongoDatabase implements MongoDatabase
 
         if (MongoLogger.GATHERER.isEnabled())
         {
-            metric = startMetric("runCommand", Arrays.asList("command", command.toString()));
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
         }
         Document runCommand = database.runCommand(command, readPreference);
         int resultSize = 0;
@@ -196,7 +197,7 @@ public class ProfiledMongoDatabase implements MongoDatabase
 
         if (MongoLogger.GATHERER.isEnabled())
         {
-            metric = startMetric("runCommand", Arrays.asList("command", command.toString()));
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
         }
         TResult runCommand = database.runCommand(command, resultClass);
         int resultSize = 0;
@@ -215,7 +216,7 @@ public class ProfiledMongoDatabase implements MongoDatabase
 
         if (MongoLogger.GATHERER.isEnabled())
         {
-            metric = startMetric("runCommand", Arrays.asList("command", command.toString()));
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
         }
         TResult runCommand = database.runCommand(command, readPreference, resultClass);
         int resultSize = 0;
