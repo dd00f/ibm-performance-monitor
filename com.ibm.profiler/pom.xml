@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ibm.profiler</groupId>
 	<artifactId>com.ibm.profiler</artifactId>
-	<version>1.4.0.1</version>
+	<version>1.4.1.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -12,8 +12,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Java compiler properties -->
-		<compiler.source.version>1.6</compiler.source.version>
-		<compiler.target.version>1.6</compiler.target.version>
+		<compiler.source.version>1.8</compiler.source.version>
+		<compiler.target.version>1.8</compiler.target.version>
 
 		<!-- Maven Plug-in Version Properties -->
 		<maven.compiler.version>2.3.2</maven.compiler.version>
