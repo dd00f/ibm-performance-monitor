@@ -425,4 +425,17 @@ public class TraceUtilities {
         return PrintMode.FULL;
     }
 
+	public static String getLayer(String id) {
+		if (id == null) {
+			return "";
+		}
+		int indexOf = id.indexOf(':');
+		if (indexOf >= 0) {
+			String substring = id.substring(0, indexOf);
+			String trim = substring.trim();
+			return trim;
+		}
+		return "";
+	}
+
 }

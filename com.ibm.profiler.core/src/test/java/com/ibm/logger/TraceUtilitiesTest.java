@@ -721,5 +721,21 @@ public class TraceUtilitiesTest {
         Assert.assertThat( message, new Contains( "cacheEnabled=\"false\"" ) );
         Assert.assertThat( message, new Contains( "resultSize=\"0\"" ) );
     }
+    
+    @Test
+    public void getLayer() {
+    	
+    	Assert.assertEquals("hello", TraceUtilities.getLayer("hello:world"));
+    	Assert.assertEquals("hello", TraceUtilities.getLayer("hello :world"));
+    	Assert.assertEquals("hello", TraceUtilities.getLayer("hello: world"));
+    	Assert.assertEquals("hello", TraceUtilities.getLayer("hello  :world"));
+    	Assert.assertEquals("hello", TraceUtilities.getLayer("hello : world : here"));
+    	Assert.assertEquals("", TraceUtilities.getLayer("hello world here"));
+    	Assert.assertEquals("", TraceUtilities.getLayer(" "));
+    	Assert.assertEquals("", TraceUtilities.getLayer(""));
+    	Assert.assertEquals("", TraceUtilities.getLayer(null));
+
+    	
+    }
 
 }

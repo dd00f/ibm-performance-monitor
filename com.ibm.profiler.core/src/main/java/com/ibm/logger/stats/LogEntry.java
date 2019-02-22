@@ -18,6 +18,7 @@ package com.ibm.logger.stats;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.ibm.logger.TraceUtilities;
 import com.ibm.logger.jmx.LogEntryMXBean;
 
 public class LogEntry implements LogEntryMXBean {
@@ -37,6 +38,8 @@ public class LogEntry implements LogEntryMXBean {
     private final AtomicBoolean inFlight = new AtomicBoolean( false );
 
     private final String id;
+    
+    private final String layer;
 
     private final LogType type;
 
@@ -49,6 +52,7 @@ public class LogEntry implements LogEntryMXBean {
     public LogEntry( String id, LogType type ) {
         this.id = id;
         this.type = type;
+        this.layer = TraceUtilities.getLayer(id);
     }
 
     /**
@@ -59,6 +63,7 @@ public class LogEntry implements LogEntryMXBean {
      */
     public LogEntry( String id, String type ) {
         this.id = id;
+        this.layer = TraceUtilities.getLayer(id);
         LogType match = null;
         for ( LogType value : LogType.values() ) {
             if ( value.name().equalsIgnoreCase( type ) )
@@ -302,4 +307,9 @@ public class LogEntry implements LogEntryMXBean {
     public boolean isInFlight() {
         return inFlight.get();
     }
+
+	@Override
+	public String getLayer() {
+		return layer;
+	}
 }

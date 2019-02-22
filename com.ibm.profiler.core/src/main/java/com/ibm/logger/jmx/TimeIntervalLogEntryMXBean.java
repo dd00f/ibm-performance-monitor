@@ -134,6 +134,12 @@ public interface TimeIntervalLogEntryMXBean {
 	 * @return The operation name. (same as the identifier)
 	 */
 	public String getName();
+	
+	/**
+	 * 
+	 * @return the layer of this operation
+	 */
+	public String getLayer();
 
 	/**
 	 * 

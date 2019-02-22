@@ -17,11 +17,14 @@ package com.ibm.logger.stats;
 
 import com.ibm.commerce.cache.IOperationMetric;
 import com.ibm.commerce.cache.OperationStatistics;
+import com.ibm.logger.TraceUtilities;
 import com.ibm.logger.jmx.TimeIntervalLogEntryMXBean;
 
 public abstract class AbstractLogEntry implements TimeIntervalLogEntryMXBean {
 
 	private final String id;
+	
+	private final String layer;
 
 	private final LogType type;
 
@@ -33,6 +36,7 @@ public abstract class AbstractLogEntry implements TimeIntervalLogEntryMXBean {
 	 */
 	public AbstractLogEntry(String id) {
 		this.id = id;
+		this.layer = TraceUtilities.getLayer(id);
 		type = LogType.STATISTIC;
 	}
 
@@ -66,6 +70,11 @@ public abstract class AbstractLogEntry implements TimeIntervalLogEntryMXBean {
 	@Override
 	public String getName() {
 		return id;
+	}
+	
+	@Override
+	public String getLayer() {
+		return layer;
 	}
 
 	@Override

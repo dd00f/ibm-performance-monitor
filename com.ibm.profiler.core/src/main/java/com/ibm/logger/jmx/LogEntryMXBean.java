@@ -28,6 +28,8 @@ public interface LogEntryMXBean {
     public float getMinimum();
 
     public String getName();
+    
+    public String getLayer();
 
     public long getNumCalls();
 
