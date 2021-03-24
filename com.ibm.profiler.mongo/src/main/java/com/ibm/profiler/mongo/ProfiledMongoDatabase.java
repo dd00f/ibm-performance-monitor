@@ -28,6 +28,9 @@ import com.ibm.service.detailed.MongoLogger;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -227,6 +230,80 @@ public class ProfiledMongoDatabase implements MongoDatabase
         stopMetric(metric, resultSize);
         return runCommand;
     }
+    
+	@Override
+	public Document runCommand(ClientSession clientSession, Bson command) {
+        OperationMetric metric = null;
+
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
+        }
+        Document runCommand = database.runCommand(clientSession, command);
+        int resultSize = 0;
+        if (MongoLogger.isResultSetSizeMeasured())
+        {
+            resultSize = CacheUtilities.safeToString(runCommand).length();
+        }
+        stopMetric(metric, resultSize);
+        return runCommand;
+	}
+
+	@Override
+	public Document runCommand(ClientSession clientSession, Bson command, ReadPreference readPreference) {
+        OperationMetric metric = null;
+
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
+        }
+        Document runCommand = database.runCommand(clientSession, command, readPreference);
+        int resultSize = 0;
+        if (MongoLogger.isResultSetSizeMeasured())
+        {
+            resultSize = CacheUtilities.safeToString(runCommand).length();
+        }
+        stopMetric(metric, resultSize);
+        return runCommand;
+	}
+
+	@Override
+	public <TResult> TResult runCommand(ClientSession clientSession, Bson command, Class<TResult> resultClass) {
+        OperationMetric metric = null;
+
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
+        }
+        TResult runCommand = database.runCommand(clientSession, command, resultClass);
+        int resultSize = 0;
+        if (MongoLogger.isResultSetSizeMeasured())
+        {
+            resultSize = CacheUtilities.safeToString(runCommand).length();
+        }
+        stopMetric(metric, resultSize);
+        return runCommand;
+	}
+
+	@Override
+	public <TResult> TResult runCommand(ClientSession clientSession, Bson command, ReadPreference readPreference,
+			Class<TResult> resultClass) {
+        OperationMetric metric = null;
+
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            metric = startMetric("Mongo : runCommand", Arrays.asList("command", command.toString()));
+        }
+        TResult runCommand = database.runCommand(clientSession, command, readPreference, resultClass);
+        int resultSize = 0;
+        if (MongoLogger.isResultSetSizeMeasured())
+        {
+            resultSize = CacheUtilities.safeToString(runCommand).length();
+        }
+        stopMetric(metric, resultSize);
+        return runCommand;
+	}
+    
 
     @Override
     public void drop()
@@ -234,17 +311,35 @@ public class ProfiledMongoDatabase implements MongoDatabase
         database.drop();
     }
 
+	@Override
+	public void drop(ClientSession clientSession) {
+		database.drop(clientSession);
+	}
+
+    
     @Override
     public MongoIterable<String> listCollectionNames()
     {
         return database.listCollectionNames();
     }
+    
+	@Override
+	public MongoIterable<String> listCollectionNames(ClientSession clientSession) {
+		 return database.listCollectionNames(clientSession);
+	}
+
 
     @Override
     public ListCollectionsIterable<Document> listCollections()
     {
         return database.listCollections();
     }
+    
+	@Override
+	public ListCollectionsIterable<Document> listCollections(ClientSession clientSession) {
+		return database.listCollections(clientSession);
+	}
+
 
     @Override
     public <TResult> ListCollectionsIterable<TResult> listCollections(Class<TResult> resultClass)
@@ -252,17 +347,36 @@ public class ProfiledMongoDatabase implements MongoDatabase
         return database.listCollections(resultClass);
     }
 
+	@Override
+	public <TResult> ListCollectionsIterable<TResult> listCollections(ClientSession clientSession,
+			Class<TResult> resultClass) {
+		return database.listCollections(clientSession, resultClass);
+	}
+
+    
     @Override
     public void createCollection(String collectionName)
     {
         database.createCollection(collectionName);
     }
 
+	@Override
+	public void createCollection(ClientSession clientSession, String collectionName) {
+		database.createCollection(clientSession, collectionName);
+	}
+    
     @Override
     public void createCollection(String collectionName, CreateCollectionOptions createCollectionOptions)
     {
         database.createCollection(collectionName, createCollectionOptions);
     }
+    
+	@Override
+	public void createCollection(ClientSession clientSession, String collectionName,
+			CreateCollectionOptions createCollectionOptions) {
+		database.createCollection(clientSession, collectionName, createCollectionOptions);
+	}
+    
 
     @Override
     public void createView(String viewName, String viewOn, List<? extends Bson> pipeline)
@@ -276,4 +390,80 @@ public class ProfiledMongoDatabase implements MongoDatabase
     {
         database.createView(viewName, viewOn, pipeline, createViewOptions);
     }
+
+
+	@Override
+	public void createView(ClientSession clientSession, String viewName, String viewOn, List<? extends Bson> pipeline) {
+		database.createView(clientSession, viewName, viewOn, pipeline);
+	}
+
+	@Override
+	public void createView(ClientSession clientSession, String viewName, String viewOn, List<? extends Bson> pipeline,
+			CreateViewOptions createViewOptions) {
+		database.createView(clientSession, viewName, viewOn, pipeline, createViewOptions);
+	}
+
+
+
+	@Override
+	public ChangeStreamIterable<Document> watch() {
+		return database.watch();
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(Class<TResult> resultClass) {
+		return database.watch(resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<Document> watch(List<? extends Bson> pipeline) {
+		return database.watch(pipeline);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(List<? extends Bson> pipeline, Class<TResult> resultClass) {
+		return database.watch(resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<Document> watch(ClientSession clientSession) {
+		return database.watch(clientSession);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(ClientSession clientSession, Class<TResult> resultClass) {
+		return database.watch(clientSession, resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<Document> watch(ClientSession clientSession, List<? extends Bson> pipeline) {
+		return database.watch(clientSession, pipeline);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(ClientSession clientSession, List<? extends Bson> pipeline,
+			Class<TResult> resultClass) {
+		return database.watch(clientSession, pipeline, resultClass);
+	}
+
+	@Override
+	public AggregateIterable<Document> aggregate(List<? extends Bson> pipeline) {
+		return database.aggregate(pipeline);
+	}
+
+	@Override
+	public <TResult> AggregateIterable<TResult> aggregate(List<? extends Bson> pipeline, Class<TResult> resultClass) {
+		return database.aggregate(pipeline, resultClass);
+	}
+
+	@Override
+	public AggregateIterable<Document> aggregate(ClientSession clientSession, List<? extends Bson> pipeline) {
+		return database.aggregate(clientSession, pipeline);
+	}
+
+	@Override
+	public <TResult> AggregateIterable<TResult> aggregate(ClientSession clientSession, List<? extends Bson> pipeline,
+			Class<TResult> resultClass) {
+		return database.aggregate(clientSession, pipeline, resultClass);
+	}
 }

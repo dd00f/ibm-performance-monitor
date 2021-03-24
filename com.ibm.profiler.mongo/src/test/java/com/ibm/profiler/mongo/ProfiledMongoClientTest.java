@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.bson.Document;
 import org.junit.AfterClass;
@@ -33,12 +34,12 @@ import org.junit.Test;
 import com.ibm.commerce.cache.LogMetricGathererManager;
 import com.ibm.commerce.cache.log4j.Log4JMetricGathererFactory;
 import com.ibm.service.detailed.MongoLogger;
-import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.Function;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.ReadPreference;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MapReduceIterable;
@@ -60,6 +61,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -76,6 +78,7 @@ public class ProfiledMongoClientTest
     public static MongoDatabase db;
     public static MongoCollection<Document> coll;
     public static TestLogMetricGatherer gatherer;
+	private static ClientSession startSession;
 
     static
     {
@@ -158,6 +161,7 @@ public class ProfiledMongoClientTest
                     "{\"car_id\":\"c6\",\"name\":\"Alto\",\"color\":\"Red\",\"cno\":\"H115\",\"mfdcountry\":\"India\",\"speed\":53,\"price\":4.5}")),
             new InsertManyOptions());
 
+        startSession = client.startSession();
     }
 
     
@@ -168,6 +172,11 @@ public class ProfiledMongoClientTest
         runCommand = db.runCommand(new Document("buildInfo", 1), Document.class);
         runCommand = db.runCommand(new Document("buildInfo", 1), ReadPreference.primary());
         runCommand = db.runCommand(new Document("buildInfo", 1), ReadPreference.primary(), Document.class);
+        
+        runCommand = db.runCommand(startSession, new Document("buildInfo", 1));
+        runCommand = db.runCommand(startSession,new Document("buildInfo", 1), Document.class);
+        runCommand = db.runCommand(startSession,new Document("buildInfo", 1), ReadPreference.primary());
+        runCommand = db.runCommand(startSession,new Document("buildInfo", 1), ReadPreference.primary(), Document.class);
         Assert.assertNotNull(runCommand);
     }
     
@@ -185,6 +194,18 @@ public class ProfiledMongoClientTest
         coll.createIndexes(Arrays.asList(new IndexModel(new Document("name", 1))));
 
         coll.dropIndexes();
+        
+        coll.createIndex(startSession,new Document("name", 1));
+
+        coll.dropIndex(startSession,new Document("name", 1));
+
+        coll.createIndex(startSession,new Document("name", 1), new IndexOptions());
+
+        coll.dropIndex(startSession,new Document("name", 1));
+
+        coll.createIndexes(startSession,Arrays.asList(new IndexModel(new Document("name", 1))));
+
+        coll.dropIndexes(startSession);
     }
 
     @Test
@@ -197,6 +218,12 @@ public class ProfiledMongoClientTest
         coll.bulkWrite(list, new BulkWriteOptions());
 
         coll.deleteMany(Filters.eq("name", "DELETEME"));
+        
+        coll.deleteOne(startSession,Filters.eq("name", "DELETEME"));
+
+        coll.bulkWrite(startSession,list, new BulkWriteOptions());
+
+        coll.deleteMany(startSession,Filters.eq("name", "DELETEME"));
     }
 
     private List<WriteModel<Document>> insertOneWithBulk()
@@ -258,7 +285,7 @@ public class ProfiledMongoClientTest
         insertOneWithBulk();
 
         Assert.assertEquals(1,
-            coll.replaceOne(Filters.eq("name", "DELETEME"), replace, new UpdateOptions()).getModifiedCount());
+            coll.replaceOne(Filters.eq("name", "DELETEME"), replace, new ReplaceOptions()).getModifiedCount());
 
         coll.deleteMany(Filters.eq("name", "DELETEME"));
     }
@@ -363,10 +390,10 @@ public class ProfiledMongoClientTest
 
         Assert.assertNotNull(createMap().batchSize(213).first());
 
-        createMap().forEach(new Block<String>()
+        createMap().forEach(new Consumer<String>()
         {
             @Override
-            public void apply(String t)
+            public void accept(String t)
             {
                 System.out.println(t);
             }
@@ -396,7 +423,8 @@ public class ProfiledMongoClientTest
         });
     }
 
-    @Test
+    @SuppressWarnings("deprecation")
+	@Test
     public void testFind()
     {
         FindIterable<Document> find = coll.find(Filters.eq("name", "Alto"), Document.class)
@@ -426,10 +454,10 @@ public class ProfiledMongoClientTest
         Document firstFind = coll.find().filter(Filters.eq("name", "Alto")).sort(Sorts.ascending("color")).first();
         Assert.assertNotNull(firstFind);
 
-        coll.find().filter(Filters.eq("name", "Alto")).forEach(new Block<Document>()
+        coll.find().filter(Filters.eq("name", "Alto")).forEach(new Consumer<Document>()
         {
             @Override
-            public void apply(Document t)
+            public void accept(Document t)
             {
                 System.out.println(t.get("name"));
             }
@@ -438,11 +466,11 @@ public class ProfiledMongoClientTest
     }
 
     @Test
-    public void testCount()
+    public void testCountDocuments()
     {
-        assertEquals(8, coll.count());
-        assertEquals(4, coll.count(Filters.eq("name", "Alto")));
-        assertEquals(4, coll.count(Filters.eq("name", "Alto"), new CountOptions()));
+        assertEquals(8, coll.countDocuments());
+        assertEquals(4, coll.countDocuments(Filters.eq("name", "Alto")));
+        assertEquals(4, coll.countDocuments(Filters.eq("name", "Alto"), new CountOptions()));
     }
 
     @Test

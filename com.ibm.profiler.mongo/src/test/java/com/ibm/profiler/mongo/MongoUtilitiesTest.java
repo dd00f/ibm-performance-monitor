@@ -38,7 +38,7 @@ public class MongoUtilitiesTest
     public MongoUtilitiesTest()
     {
         super();
-    }
+   }
 
     @Test
     public void testFilterParametersListOfQextendsBson()
@@ -48,13 +48,13 @@ public class MongoUtilitiesTest
         // {$match: {dateKey:{$in:[ObjectId("593898622313868b72a296ad"), ObjectId("593898622313868b72a296b4"),
         // ObjectId("593898622313868b72a296bf"), ObjectId("593898622313868b72a296c5"),
         // ObjectId("593898622313868b72a296ca"), ObjectId("593898622313868b72a296d3"),
-        // ObjectId("593898622313868b72a296d8")]}} },
-        // {$lookup : { from : "dimensions", localField : "dateKey", foreignField : "_id", as : "dateCat" } },
-        // {$group:{ _id:{month:"$dateCat.month", year:"$dateCat.year",
+        // ObjectId("593898622313868b72a296d8")]}}},
+        // {$lookup: {from: "dimensions", localField: "dateKey", foreignField: "_id", as: "dateCat"}},
+        // {$group:{_id:{month:"$dateCat.month", year:"$dateCat.year",
         // day:"$dateCat.dayOfMonth"},documentCount:{$sum:"$docCount"}}}
         // ]
 
-    }
+   }
 
     @Test
     public void testFilterParametersBsonDocumentMatchIn()
@@ -63,9 +63,9 @@ public class MongoUtilitiesTest
         Bson match = Aggregates.match(Filters.in("dateKey", "593898622313868b72a296ad", "593898622313868b72a296b4"));
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"$match\" : { \"dateKey\" : { \"$in\" : [\"*?\"] } } }", filterParameters.toString());
+        assertEquals("{\"$match\": {\"dateKey\": {\"$in\": [\"*?\"]}}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterAll()
@@ -74,9 +74,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.all("field name", "value 1", "value 2");
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$all\" : [\"*?\"] } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$all\": [\"*?\"]}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterbitsAllClear()
@@ -85,9 +85,10 @@ public class MongoUtilitiesTest
         Bson match = Filters.bitsAllClear("field name", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$bitsAllClear\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$bitsAllClear\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
+
     
     @Test
     public void testFilterParametersBsonDocumentFilterbitsAllSet()
@@ -96,9 +97,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.bitsAllSet("field name", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$bitsAllSet\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$bitsAllSet\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterbitsAnyClear()
@@ -107,9 +108,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.bitsAnyClear("field name", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$bitsAnyClear\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$bitsAnyClear\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterbitsAnySet()
@@ -118,9 +119,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.bitsAnySet("field name", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$bitsAnySet\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$bitsAnySet\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterelemMatch()
@@ -129,9 +130,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.elemMatch("field name", Filters.eq("field","value"));
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$elemMatch\" : { \"field\" : \"?\" } } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$elemMatch\": {\"field\": \"?\"}}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterexists()
@@ -140,9 +141,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.exists("field name", false);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"field name\" : { \"$exists\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"field name\": {\"$exists\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFiltergt()
@@ -151,9 +152,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.gt("fieldname", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$gt\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$gt\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFiltermod()
@@ -162,9 +163,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.mod("fieldname", 123, 56);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$mod\" : [\"?\", \"?\"] } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$mod\": [\"?\", \"?\"]}}", filterParameters.toString());
 
-    }
+   }
     
     
     @Test
@@ -174,9 +175,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.ne("fieldname", 123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$ne\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$ne\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterNIN()
@@ -185,9 +186,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.nin("fieldname", 123,456);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$nin\" : [\"*?\"] } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$nin\": [\"*?\"]}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterREGEX()
@@ -196,9 +197,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.regex("fieldname","regex");
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : \"?\" }", filterParameters.toString());
+        assertEquals("{\"fieldname\": \"?\"}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterSIZE()
@@ -207,9 +208,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.size("fieldname",123);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$size\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$size\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     
     @Test
@@ -219,9 +220,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.text("fieldname");
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"$text\" : { \"$search\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"$text\": {\"$search\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterTYPE()
@@ -230,9 +231,9 @@ public class MongoUtilitiesTest
         Bson match = Filters.type("fieldname","string");
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"fieldname\" : { \"$type\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"fieldname\": {\"$type\": \"?\"}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentFilterwhere()
@@ -240,8 +241,8 @@ public class MongoUtilitiesTest
         Bson match = Filters.where("this.credits - this.debits < 0");
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"$where\" : \"?\" }", filterParameters.toString());
-    }
+        assertEquals("{\"$where\": \"?\"}", filterParameters.toString());
+   }
     
     @Test
     public void testFilterParametersBsonDocumentMatchInAndEq()
@@ -254,9 +255,9 @@ public class MongoUtilitiesTest
         Bson match = Aggregates.match(and);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"$match\" : { \"dateKey\" : { \"$in\" : [\"*?\"] }, \"eqfield\" : \"?\" } }", filterParameters.toString());
+        assertEquals("{\"$match\": {\"$and\": [{\"dateKey\": {\"$in\": [\"*?\"]}}, {\"eqfield\": \"?\"}]}}", filterParameters.toString());
 
-    }
+   }
     
     @Test
     public void testFilterParametersBsonDocumentMatchInOrEq()
@@ -269,9 +270,9 @@ public class MongoUtilitiesTest
         Bson match = Aggregates.match(or);
         BsonDocument filterParameters = MongoUtilities.filterParameters(match);
         
-        assertEquals("{ \"$match\" : { \"$or\" : [{ \"dateKey\" : { \"$in\" : [\"*?\"] } }, { \"eqfield\" : \"?\" }] } }", filterParameters.toString());
+        assertEquals("{\"$match\": {\"$or\": [{\"dateKey\": {\"$in\": [\"*?\"]}}, {\"eqfield\": \"?\"}]}}", filterParameters.toString());
 
-    }
+   }
 
 
     @Test
@@ -281,60 +282,60 @@ public class MongoUtilitiesTest
         Bson group = Aggregates.group("_id", Accumulators.sum("totalQuantity", "$quantity"));
         BsonDocument filterParameters = MongoUtilities.filterParameters(group);
         
-        assertEquals("{ \"$group\" : { \"_id\" : \"_id\", \"totalQuantity\" : { \"$sum\" : \"$quantity\" } } }", filterParameters.toString());
+        assertEquals("{\"$group\": {\"_id\": \"_id\", \"totalQuantity\": {\"$sum\": \"$quantity\"}}}", filterParameters.toString());
 
-    }
+   }
 
     @Test
     public void testFilterParametersBsonDocumentLookup()
-    {      
+    {     
         
         Bson lookup = Aggregates.lookup("fromField", "localField", "foreignField", "as");
         BsonDocument filterParameters = MongoUtilities.filterParameters(lookup);
         
-        assertEquals("{ \"$lookup\" : { \"from\" : \"fromField\", \"localField\" : \"localField\", \"foreignField\" : \"foreignField\", \"as\" : \"as\" } }", filterParameters.toString());
+        assertEquals("{\"$lookup\": {\"from\": \"fromField\", \"localField\": \"localField\", \"foreignField\": \"foreignField\", \"as\": \"as\"}}", filterParameters.toString());
 
-    }
+   }
 
     @Test
     public void testFilterParametersBsonDocument()
     {
 
-    }
+   }
 
     @Test
     public void testFilterValue()
     {
 
-    }
+   }
 
     @Test
     public void testGetKeyValuePairsBson()
     {
 
-    }
+   }
 
     @Test
     public void testGetKeyValuePairsListOfQextendsBson()
     {
 
-    }
+   }
 
     @Test
     public void testAddKeyValuePairs()
     {
 
-    }
+   }
 
     @Test
     public void testFilterParametersBson()
     {
 
-    }
+   }
 
     @Test
     public void testGetIndexModelKeyValuePairs()
     {
 
-    }
+   }
 }

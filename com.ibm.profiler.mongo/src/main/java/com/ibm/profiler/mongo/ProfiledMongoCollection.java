@@ -35,6 +35,8 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.ListIndexesIterable;
@@ -42,7 +44,10 @@ import com.mongodb.client.MapReduceIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.model.DropIndexOptions;
+import com.mongodb.client.model.EstimatedDocumentCountOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -51,9 +56,12 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertManyResult;
+import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 
 /**
@@ -107,13 +115,13 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public AggregateIterable<TDocument> aggregate(List<? extends Bson> arg0)
+    public AggregateIterable<TDocument> aggregate(List<? extends Bson> pipeline)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<BsonDocument> aggregation = MongoUtilities.filterParameters(arg0);
-            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(arg0);
+            List<BsonDocument> aggregation = MongoUtilities.filterParameters(pipeline);
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(pipeline);
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : aggregate " +
                 aggregation.toString();
             metric = startMetric(operationName, keyValuePairs);
@@ -121,31 +129,71 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addReadConcernAndPreference(metric);
         }
 
-        AggregateIterable<TDocument> aggregate = collection.aggregate(arg0);
+        AggregateIterable<TDocument> aggregate = collection.aggregate(pipeline);
 
         stopMetric(metric, 0);
         return aggregate;
     }
 
     @Override
-    public <TResult> AggregateIterable<TResult> aggregate(List<? extends Bson> arg0, Class<TResult> arg1)
+    public <TResult> AggregateIterable<TResult> aggregate(List<? extends Bson> pipeline, Class<TResult> arg1)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<BsonDocument> aggregation = MongoUtilities.filterParameters(arg0);
-            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(arg0);
+            List<BsonDocument> aggregation = MongoUtilities.filterParameters(pipeline);
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(pipeline);
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : aggregate " +
                 aggregation.toString();
             metric = startMetric(operationName, keyValuePairs);
             addReadConcernAndPreference(metric);
         }
 
-        AggregateIterable<TResult> aggregate = collection.aggregate(arg0, arg1);
+        AggregateIterable<TResult> aggregate = collection.aggregate(pipeline, arg1);
 
         stopMetric(metric, 0);
         return aggregate;
     }
+    
+	@Override
+	public AggregateIterable<TDocument> aggregate(ClientSession clientSession, List<? extends Bson> pipeline) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<BsonDocument> aggregation = MongoUtilities.filterParameters(pipeline);
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(pipeline);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : aggregate " +
+                aggregation.toString();
+            metric = startMetric(operationName, keyValuePairs);
+            metric.setKeyValuePairList(keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        AggregateIterable<TDocument> aggregate = collection.aggregate(clientSession, pipeline);
+
+        stopMetric(metric, 0);
+        return aggregate;
+	}
+
+	@Override
+	public <TResult> AggregateIterable<TResult> aggregate(ClientSession clientSession, List<? extends Bson> pipeline,
+			Class<TResult> resultClass) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<BsonDocument> aggregation = MongoUtilities.filterParameters(pipeline);
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(pipeline);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : aggregate " +
+                aggregation.toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        AggregateIterable<TResult> aggregate = collection.aggregate(clientSession, pipeline, resultClass);
+
+        stopMetric(metric, 0);
+        return aggregate;
+	}    
 
     @Override
     public BulkWriteResult bulkWrite(List<? extends WriteModel<? extends TDocument>> arg0)
@@ -198,9 +246,101 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
 
         return bulkWrite;
     }
+    
+    
+	@Override
+	public BulkWriteResult bulkWrite(ClientSession clientSession,
+			List<? extends WriteModel<? extends TDocument>> requests) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : bulkWrite";
+            metric = startMetric(operationName, keyValuePairs);
+            metric.setProperty(CommonMetricProperties.REQUEST_OBJECT_COUNT, Integer.toString(requests.size()));
+            addWriteConcern(metric);
 
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = requests.toString().length();
+            }
+        }
+
+        BulkWriteResult bulkWrite = collection.bulkWrite(clientSession, requests);
+
+        stopMetric(metric, writeSize);
+
+        return bulkWrite;
+	}
+
+	@Override
+	public BulkWriteResult bulkWrite(ClientSession clientSession,
+			List<? extends WriteModel<? extends TDocument>> requests, BulkWriteOptions options) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : bulkWrite";
+            metric = startMetric(operationName, keyValuePairs);
+            metric.setProperty(CommonMetricProperties.REQUEST_OBJECT_COUNT, Integer.toString(requests.size()));
+            addWriteConcern(metric);
+
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = requests.toString().length();
+            }
+        }
+
+        BulkWriteResult bulkWrite = collection.bulkWrite(clientSession, requests, options);
+
+        stopMetric(metric, writeSize);
+
+        return bulkWrite;
+	}
+    
+    
+	@Override
+	public long estimatedDocumentCount() {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : estimatedDocumentCount";
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        long count = collection.estimatedDocumentCount();
+
+        stopMetric(metric, writeSize);
+
+        return count;
+	}
+
+	@Override
+	public long estimatedDocumentCount(EstimatedDocumentCountOptions options) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : estimatedDocumentCount";
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        long count = collection.estimatedDocumentCount(options);
+
+        stopMetric(metric, writeSize);
+
+        return count;
+	}
+	
     @Override
-    public long count()
+    public long countDocuments()
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -212,15 +352,35 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addReadConcernAndPreference(metric);
         }
 
-        long count = collection.count();
+        long count = collection.countDocuments();
 
         stopMetric(metric, writeSize);
 
         return count;
     }
 
+	@Override
+	public long countDocuments(ClientSession clientSession) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : count";
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        long count = collection.countDocuments(clientSession);
+
+        stopMetric(metric, writeSize);
+
+        return count;
+	}
+
+    
     @Override
-    public long count(Bson filter)
+    public long countDocuments(Bson filter)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -233,15 +393,37 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addReadConcernAndPreference(metric);
         }
 
-        long count = collection.count(filter);
+        long count = collection.countDocuments(filter);
 
         stopMetric(metric, writeSize);
 
         return count;
     }
+    
+
+	@Override
+	public long countDocuments(ClientSession clientSession, Bson filter) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : count " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        long count = collection.countDocuments(clientSession, filter);
+
+        stopMetric(metric, writeSize);
+
+        return count;
+	}
+
 
     @Override
-    public long count(Bson filter, CountOptions arg1)
+    public long countDocuments(Bson filter, CountOptions arg1)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -254,13 +436,35 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addReadConcernAndPreference(metric);
         }
 
-        long count = collection.count(filter, arg1);
+        long count = collection.countDocuments(filter, arg1);
 
         stopMetric(metric, writeSize);
 
         return count;
     }
 
+
+	@Override
+	public long countDocuments(ClientSession clientSession, Bson filter, CountOptions options) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : count " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addReadConcernAndPreference(metric);
+        }
+
+        long count = collection.countDocuments(clientSession, filter, options);
+
+        stopMetric(metric, writeSize);
+
+        return count;
+	}
+    
+    
     @Override
     public String createIndex(Bson arg0)
     {
@@ -281,42 +485,136 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public String createIndex(Bson arg0, IndexOptions arg1)
+    public String createIndex(Bson keys, IndexOptions indexOptions)
     {
         int writeSize = 0;
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<String> keyValuePairs = Arrays.asList(arg0.toString());
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndex";
             metric = startMetric(operationName, keyValuePairs);
         }
 
-        String retVal = collection.createIndex(arg0, arg1);
+        String retVal = collection.createIndex(keys, indexOptions);
 
         stopMetric(metric, writeSize);
 
         return retVal;
     }
+    
+	@Override
+	public String createIndex(ClientSession clientSession, Bson keys) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        String retVal = collection.createIndex(clientSession, keys);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public String createIndex(ClientSession clientSession, Bson keys, IndexOptions indexOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        String retVal = collection.createIndex(clientSession, keys, indexOptions);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+
 
     @Override
-    public List<String> createIndexes(List<IndexModel> arg0)
+    public List<String> createIndexes(List<IndexModel> indexes)
     {
         int writeSize = 0;
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<String> keyValuePairs = MongoUtilities.getIndexModelKeyValuePairs(arg0);
+            List<String> keyValuePairs = MongoUtilities.getIndexModelKeyValuePairs(indexes);
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndexes";
             metric = startMetric(operationName, keyValuePairs);
         }
 
-        List<String> retVal = collection.createIndexes(arg0);
+        List<String> retVal = collection.createIndexes(indexes);
 
         stopMetric(metric, writeSize);
 
         return retVal;
     }
+    
+	@Override
+	public List<String> createIndexes(List<IndexModel> indexes, CreateIndexOptions createIndexOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getIndexModelKeyValuePairs(indexes);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        List<String> retVal = collection.createIndexes(indexes, createIndexOptions);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public List<String> createIndexes(ClientSession clientSession, List<IndexModel> indexes) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getIndexModelKeyValuePairs(indexes);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        List<String> retVal = collection.createIndexes(clientSession, indexes);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public List<String> createIndexes(ClientSession clientSession, List<IndexModel> indexes,
+			CreateIndexOptions createIndexOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getIndexModelKeyValuePairs(indexes);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : createIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        List<String> retVal = collection.createIndexes(clientSession, indexes, createIndexOptions);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+    
 
     @Override
     public DeleteResult deleteMany(Bson filter)
@@ -357,6 +655,46 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
 
         return retVal;
     }
+    
+
+	@Override
+	public DeleteResult deleteMany(ClientSession clientSession, Bson filter) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : deleteMany " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        DeleteResult retVal = collection.deleteMany(clientSession, filter);
+
+        stopMetric(metric, (int) retVal.getDeletedCount());
+
+        return retVal;
+	}
+
+	@Override
+	public DeleteResult deleteMany(ClientSession clientSession, Bson filter, DeleteOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : deleteMany " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        DeleteResult retVal = collection.deleteMany(clientSession, filter, options);
+
+        stopMetric(metric, (int) retVal.getDeletedCount());
+
+        return retVal;
+	}
+    
 
     @Override
     public DeleteResult deleteOne(Bson filter)
@@ -398,6 +736,45 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return retVal;
     }
 
+	@Override
+	public DeleteResult deleteOne(ClientSession clientSession, Bson filter) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : deleteOne " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        DeleteResult retVal = collection.deleteOne(clientSession, filter);
+
+        stopMetric(metric, (int) retVal.getDeletedCount());
+
+        return retVal;
+	}
+
+	@Override
+	public DeleteResult deleteOne(ClientSession clientSession, Bson filter, DeleteOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : deleteOne " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        DeleteResult retVal = collection.deleteOne(clientSession, filter, options);
+
+        stopMetric(metric, (int) retVal.getDeletedCount());
+
+        return retVal;
+	}
+    
+    
     @Override
     public <TResult> DistinctIterable<TResult> distinct(String fieldName, Class<TResult> arg1)
     {
@@ -417,6 +794,27 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return profiledFindIterable;
     }
 
+
+	@Override
+	public <TResult> DistinctIterable<TResult> distinct(ClientSession clientSession, String fieldName,
+			Class<TResult> resultClass) {
+        DistinctIterable<TResult> find = collection.distinct(clientSession, fieldName, resultClass);
+        ProfiledDistinctIterable<TDocument, TResult> profiledFindIterable = new ProfiledDistinctIterable<TDocument, TResult>(
+            find, fieldName, this);
+        return profiledFindIterable;
+	}
+
+	@Override
+	public <TResult> DistinctIterable<TResult> distinct(ClientSession clientSession, String fieldName, Bson filter,
+			Class<TResult> resultClass) {
+        DistinctIterable<TResult> find = collection.distinct(clientSession, fieldName, filter, resultClass);
+        ProfiledDistinctIterable<TDocument, TResult> profiledFindIterable = new ProfiledDistinctIterable<TDocument, TResult>(
+            find, fieldName, this);
+        profiledFindIterable.filter(filter);
+        return profiledFindIterable;
+	}
+
+    
     @Override
     public void drop()
     {
@@ -434,38 +832,147 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
 
     }
 
+	@Override
+	public void drop(ClientSession clientSession) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : drop";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.drop(clientSession);
+
+        stopMetric(metric, 0);
+
+	}
+
+    
     @Override
-    public void dropIndex(String arg0)
+    public void dropIndex(String indexName)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<String> keyValuePairs = Arrays.asList(arg0);
+            List<String> keyValuePairs = Arrays.asList(indexName);
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
             metric = startMetric(operationName, keyValuePairs);
         }
 
-        collection.dropIndex(arg0);
+        collection.dropIndex(indexName);
 
         stopMetric(metric, 0);
     }
 
     @Override
-    public void dropIndex(Bson arg0)
+    public void dropIndex(Bson keys)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
-            List<String> keyValuePairs = Arrays.asList(arg0.toString());
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
             metric = startMetric(operationName, keyValuePairs);
         }
 
-        collection.dropIndex(arg0);
+        collection.dropIndex(keys);
 
         stopMetric(metric, 0);
     }
 
+	@Override
+	public void dropIndex(String indexName, DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(new String[]{"indexName", indexName});
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(indexName, dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndex(Bson keys, DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(keys, dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndex(ClientSession clientSession, String indexName) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(indexName);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(clientSession, indexName);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndex(ClientSession clientSession, Bson keys) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(clientSession, keys);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndex(ClientSession clientSession, String indexName, DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(new String[]{"indexName", indexName});
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(clientSession, indexName, dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndex(ClientSession clientSession, Bson keys, DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = Arrays.asList(keys.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndex";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndex(clientSession, keys, dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+    
+    
+    
     @Override
     public void dropIndexes()
     {
@@ -482,6 +989,53 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         stopMetric(metric, 0);
     }
 
+    
+	@Override
+	public void dropIndexes(ClientSession clientSession) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndexes(clientSession);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndexes(DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndexes(dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+
+	@Override
+	public void dropIndexes(ClientSession clientSession, DropIndexOptions dropIndexOptions) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = null;
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : dropIndexes";
+            metric = startMetric(operationName, keyValuePairs);
+        }
+
+        collection.dropIndexes(clientSession, dropIndexOptions);
+
+        stopMetric(metric, 0);
+	}
+
+    
     @Override
     public FindIterable<TDocument> find()
     {
@@ -516,6 +1070,37 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return profiledFindIterable;
     }
 
+	@Override
+	public FindIterable<TDocument> find(ClientSession clientSession) {
+        FindIterable<TDocument> find = collection.find(clientSession);
+        return new ProfiledFindIterable<TDocument, TDocument>(find, this);
+	}
+
+	@Override
+	public <TResult> FindIterable<TResult> find(ClientSession clientSession, Class<TResult> resultClass) {
+        FindIterable<TResult> find = collection.find(clientSession, resultClass);
+        return new ProfiledFindIterable<TDocument, TResult>(find, this);
+	}
+
+	@Override
+	public FindIterable<TDocument> find(ClientSession clientSession, Bson filter) {
+        FindIterable<TDocument> find = collection.find(clientSession, filter);
+        ProfiledFindIterable<TDocument, TDocument> profiledFindIterable = new ProfiledFindIterable<TDocument, TDocument>(
+            find, this);
+        profiledFindIterable.filter(filter);
+        return profiledFindIterable;
+	}
+
+	@Override
+	public <TResult> FindIterable<TResult> find(ClientSession clientSession, Bson filter, Class<TResult> resultClass) {
+        FindIterable<TResult> find = collection.find(clientSession, filter, resultClass);
+        ProfiledFindIterable<TDocument, TResult> profiledFindIterable = new ProfiledFindIterable<TDocument, TResult>(
+            find, this);
+        profiledFindIterable.filter(filter);
+        return profiledFindIterable;
+	}    
+    
+    
     @Override
     public TDocument findOneAndDelete(Bson filter)
     {
@@ -558,7 +1143,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public TDocument findOneAndDelete(Bson filter, FindOneAndDeleteOptions arg1)
+    public TDocument findOneAndDelete(Bson filter, FindOneAndDeleteOptions options)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
@@ -571,12 +1156,54 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addReadConcernAndPreference(metric);
         }
 
-        TDocument retVal = collection.findOneAndDelete(filter, arg1);
+        TDocument retVal = collection.findOneAndDelete(filter, options);
 
         stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
 
         return retVal;
     }
+    
+
+	@Override
+	public TDocument findOneAndDelete(ClientSession clientSession, Bson filter) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndDelete " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndDelete(clientSession, filter);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndDelete(ClientSession clientSession, Bson filter, FindOneAndDeleteOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndDelete " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndDelete(clientSession, filter, options);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+    
 
     @Override
     public TDocument findOneAndReplace(Bson filter, TDocument arg1)
@@ -605,7 +1232,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public TDocument findOneAndReplace(Bson filter, TDocument arg1, FindOneAndReplaceOptions arg2)
+    public TDocument findOneAndReplace(Bson filter, TDocument replacement, FindOneAndReplaceOptions options)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
@@ -617,18 +1244,71 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             addWriteKeyValuePairs(keyValuePairs);
             if (MongoLogger.isRequestSizeMeasured())
             {
-                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(arg1)));
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(replacement)));
             }
             addWriteConcern(metric);
             addReadConcernAndPreference(metric);
         }
 
-        TDocument retVal = collection.findOneAndReplace(filter, arg1, arg2);
+        TDocument retVal = collection.findOneAndReplace(filter, replacement, options);
 
         stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
 
         return retVal;
     }
+    
+    
+	@Override
+	public TDocument findOneAndReplace(ClientSession clientSession, Bson filter, TDocument replacement) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndReplace " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteKeyValuePairs(keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(replacement)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndReplace(clientSession, filter, replacement);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndReplace(ClientSession clientSession, Bson filter, TDocument replacement,
+			FindOneAndReplaceOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndReplace " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteKeyValuePairs(keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(replacement)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndReplace(clientSession, filter, replacement, options);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+    
 
     @Override
     public TDocument findOneAndUpdate(Bson filter, Bson arg1)
@@ -658,32 +1338,191 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public TDocument findOneAndUpdate(Bson filter, Bson arg1, FindOneAndUpdateOptions arg2)
+    public TDocument findOneAndUpdate(Bson filter, Bson update, FindOneAndUpdateOptions options)
     {
         OperationMetric metric = null;
         if (MongoLogger.GATHERER.isEnabled())
         {
             List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
             keyValuePairs.add("update");
-            keyValuePairs.add(CacheUtilities.safeToString(arg1));
+            keyValuePairs.add(CacheUtilities.safeToString(update));
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
                 MongoUtilities.filterParameters(filter).toString();
             metric = startMetric(operationName, keyValuePairs);
             if (MongoLogger.isRequestSizeMeasured())
             {
-                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(arg1)));
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
             }
             addWriteConcern(metric);
             addReadConcernAndPreference(metric);
         }
 
-        TDocument retVal = collection.findOneAndUpdate(filter, arg1, arg2);
+        TDocument retVal = collection.findOneAndUpdate(filter, update, options);
 
         stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
 
         return retVal;
     }
 
+	@Override
+	public TDocument findOneAndUpdate(ClientSession clientSession, Bson filter, Bson update) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(clientSession, filter, update);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndUpdate(ClientSession clientSession, Bson filter, Bson update,
+			FindOneAndUpdateOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(clientSession, filter, update, options);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndUpdate(Bson filter, List<? extends Bson> update) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(filter, update);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndUpdate(Bson filter, List<? extends Bson> update, FindOneAndUpdateOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(filter, update, options);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndUpdate(ClientSession clientSession, Bson filter, List<? extends Bson> update) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(clientSession, filter, update);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+
+	@Override
+	public TDocument findOneAndUpdate(ClientSession clientSession, Bson filter, List<? extends Bson> update,
+			FindOneAndUpdateOptions options) {
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(CacheUtilities.safeToString(update));
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : findOneAndUpdate " +
+                MongoUtilities.filterParameters(filter).toString();
+            metric = startMetric(operationName, keyValuePairs);
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(measureDocumentSize(update)));
+            }
+            addWriteConcern(metric);
+            addReadConcernAndPreference(metric);
+        }
+
+        TDocument retVal = collection.findOneAndUpdate(clientSession, filter, update, options);
+
+        stopMetric(metric, measureDocumentSizeIfResultSizeEnabled(retVal));
+
+        return retVal;
+	}
+    
+    
     @Override
     public CodecRegistry getCodecRegistry()
     {
@@ -721,7 +1560,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public void insertMany(List<? extends TDocument> arg0)
+    public InsertManyResult insertMany(List<? extends TDocument> arg0)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -740,9 +1579,10 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             }
         }
 
-        collection.insertMany(arg0);
+        InsertManyResult result = collection.insertMany(arg0);
 
         stopMetric(metric, 0);
+        return result;
     }
 
     private static AtomicLong UNIQUE_ID = new AtomicLong();
@@ -761,7 +1601,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public void insertMany(List<? extends TDocument> arg0, InsertManyOptions arg1)
+    public InsertManyResult insertMany(List<? extends TDocument> arg0, InsertManyOptions arg1)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -780,13 +1620,66 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             }
         }
 
-        collection.insertMany(arg0, arg1);
+        InsertManyResult result = collection.insertMany(arg0, arg1);
 
         stopMetric(metric, writeSize);
+        return result;
     }
+    
+	@Override
+	public InsertManyResult insertMany(ClientSession clientSession, List<? extends TDocument> documents) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : insertMany";
+            metric = startMetric(operationName, keyValuePairs);
+            metric.setProperty(CommonMetricProperties.REQUEST_OBJECT_COUNT, Integer.toString(documents.size()));
+            addWriteConcern(metric);
+
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                writeSize = documents.toString().length();
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(writeSize));
+            }
+        }
+
+        InsertManyResult result = collection.insertMany(clientSession, documents);
+
+        stopMetric(metric, writeSize);
+        return result;
+	}
+
+	@Override
+	public InsertManyResult insertMany(ClientSession clientSession, List<? extends TDocument> documents,
+			InsertManyOptions options) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : insertMany";
+            metric = startMetric(operationName, keyValuePairs);
+            metric.setProperty(CommonMetricProperties.REQUEST_OBJECT_COUNT, Integer.toString(documents.size()));
+            addWriteConcern(metric);
+
+            if (MongoLogger.isRequestSizeMeasured())
+            {
+                writeSize = documents.toString().length();
+                metric.setProperty(CommonMetricProperties.REQUEST_SIZE_BYTES, Integer.toString(writeSize));
+            }
+        }
+
+        InsertManyResult result = collection.insertMany(clientSession, documents, options);
+
+        stopMetric(metric, writeSize);
+        return result;
+	}
+    
 
     @Override
-    public void insertOne(TDocument arg0)
+    public InsertOneResult insertOne(TDocument arg0)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -803,13 +1696,14 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             }
         }
 
-        collection.insertOne(arg0);
+        InsertOneResult result = collection.insertOne(arg0);
 
         stopMetric(metric, writeSize);
+        return result;
     }
 
     @Override
-    public void insertOne(TDocument arg0, InsertOneOptions arg1)
+    public InsertOneResult insertOne(TDocument arg0, InsertOneOptions arg1)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -826,10 +1720,57 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             }
         }
 
-        collection.insertOne(arg0, arg1);
+        InsertOneResult result = collection.insertOne(arg0, arg1);
 
         stopMetric(metric, writeSize);
+        return result;
     }
+    
+	@Override
+	public InsertOneResult insertOne(ClientSession clientSession, TDocument document) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : insertOne";
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = document.toString().length();
+            }
+        }
+
+        InsertOneResult result = collection.insertOne(clientSession, document);
+
+        stopMetric(metric, writeSize);
+        return result;
+	}
+
+	@Override
+	public InsertOneResult insertOne(ClientSession clientSession, TDocument document, InsertOneOptions options) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = createWriteKeyValuePairs();
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : insertOne";
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = document.toString().length();
+            }
+        }
+
+        InsertOneResult result = collection.insertOne(clientSession, document, options);
+
+        stopMetric(metric, writeSize);
+        return result;
+	}    
 
     @Override
     public ListIndexesIterable<Document> listIndexes()
@@ -843,6 +1784,17 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return collection.listIndexes(arg0);
     }
 
+	@Override
+	public ListIndexesIterable<Document> listIndexes(ClientSession clientSession) {
+        return collection.listIndexes(clientSession);
+	}
+
+	@Override
+	public <TResult> ListIndexesIterable<TResult> listIndexes(ClientSession clientSession, Class<TResult> resultClass) {
+        return collection.listIndexes(clientSession, resultClass);
+	}
+
+    
     @Override
     public MapReduceIterable<TDocument> mapReduce(String mapFunction, String reduceFunction)
     {
@@ -865,6 +1817,29 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
 
         return profiledMapReduce;
     }
+    
+	@Override
+	public MapReduceIterable<TDocument> mapReduce(ClientSession clientSession, String mapFunction,
+			String reduceFunction) {
+        MapReduceIterable<TDocument> mapReduce = collection.mapReduce(clientSession, mapFunction, reduceFunction);
+
+        ProfiledMapReduceIterable<TDocument, TDocument> profiledMapReduce = new ProfiledMapReduceIterable<TDocument, TDocument>(
+            mapFunction, reduceFunction, mapReduce, this);
+
+        return profiledMapReduce;
+	}
+
+	@Override
+	public <TResult> MapReduceIterable<TResult> mapReduce(ClientSession clientSession, String mapFunction,
+			String reduceFunction, Class<TResult> resultClass) {
+        MapReduceIterable<TResult> mapReduce = collection.mapReduce(clientSession, mapFunction, reduceFunction, resultClass);
+
+        ProfiledMapReduceIterable<TDocument, TResult> profiledMapReduce = new ProfiledMapReduceIterable<TDocument, TResult>(
+            mapFunction, reduceFunction, mapReduce, this);
+
+        return profiledMapReduce;
+	}
+    
 
     @Override
     public void renameCollection(MongoNamespace arg0)
@@ -878,6 +1853,18 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         collection.renameCollection(arg0, arg1);
     }
 
+    
+	@Override
+	public void renameCollection(ClientSession clientSession, MongoNamespace newCollectionNamespace) {
+		collection.renameCollection(clientSession, newCollectionNamespace);
+	}
+
+	@Override
+	public void renameCollection(ClientSession clientSession, MongoNamespace newCollectionNamespace,
+			RenameCollectionOptions renameCollectionOptions) {
+		collection.renameCollection(clientSession, newCollectionNamespace, renameCollectionOptions);
+	}
+    
     @Override
     public UpdateResult replaceOne(Bson filter, TDocument arg1)
     {
@@ -909,7 +1896,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public UpdateResult replaceOne(Bson filter, TDocument arg1, UpdateOptions arg2)
+    public UpdateResult replaceOne(Bson filter, TDocument arg1, ReplaceOptions arg2)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -937,6 +1924,64 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return retVal;
     }
 
+	@Override
+	public UpdateResult replaceOne(ClientSession clientSession, Bson filter, TDocument replacement) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            addWriteKeyValuePairs(keyValuePairs);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : replaceOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = replacement.toString().length();
+            }
+        }
+
+        UpdateResult retVal = collection.replaceOne(clientSession, filter, replacement);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult replaceOne(ClientSession clientSession, Bson filter, TDocument replacement,
+			ReplaceOptions replaceOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            addWriteKeyValuePairs(keyValuePairs);
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : replaceOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+
+            if (MongoLogger.isResultSetSizeMeasured())
+            {
+                writeSize = replacement.toString().length();
+            }
+        }
+
+        UpdateResult retVal = collection.replaceOne(clientSession, filter, replacement, replaceOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+    
+    
     private void insertUpdateResultProperties(OperationMetric metric, UpdateResult retVal)
     {
         if (metric != null)
@@ -972,7 +2017,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public UpdateResult updateMany(Bson filter, Bson arg1, UpdateOptions arg2)
+    public UpdateResult updateMany(Bson filter, Bson update, UpdateOptions updateOptions)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -980,14 +2025,14 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         {
             List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
             keyValuePairs.add("update");
-            keyValuePairs.add(arg1.toString());
+            keyValuePairs.add(update.toString());
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
                 MongoUtilities.filterParameters(filter);
             metric = startMetric(operationName, keyValuePairs);
             addWriteConcern(metric);
         }
 
-        UpdateResult retVal = collection.updateMany(filter, arg1, arg2);
+        UpdateResult retVal = collection.updateMany(filter, update, updateOptions);
 
         insertUpdateResultProperties(metric, retVal);
 
@@ -996,6 +2041,153 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return retVal;
     }
 
+	@Override
+	public UpdateResult updateMany(ClientSession clientSession, Bson filter, Bson update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(clientSession, filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateMany(ClientSession clientSession, Bson filter, Bson update, UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(clientSession, filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateMany(Bson filter, List<? extends Bson> update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateMany(Bson filter, List<? extends Bson> update, UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateMany(ClientSession clientSession, Bson filter, List<? extends Bson> update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(clientSession, filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateMany(ClientSession clientSession, Bson filter, List<? extends Bson> update,
+			UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateMany : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateMany(clientSession, filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+    
+    
+    
     @Override
     public UpdateResult updateOne(Bson filter, Bson arg1)
     {
@@ -1022,7 +2214,7 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
     }
 
     @Override
-    public UpdateResult updateOne(Bson filter, Bson arg1, UpdateOptions arg2)
+    public UpdateResult updateOne(Bson filter, Bson update, UpdateOptions updateOptions)
     {
         int writeSize = 0;
         OperationMetric metric = null;
@@ -1030,14 +2222,14 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         {
             List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
             keyValuePairs.add("update");
-            keyValuePairs.add(arg1.toString());
+            keyValuePairs.add(update.toString());
             String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
                 MongoUtilities.filterParameters(filter);
             metric = startMetric(operationName, keyValuePairs);
             addWriteConcern(metric);
         }
 
-        UpdateResult retVal = collection.updateOne(filter, arg1, arg2);
+        UpdateResult retVal = collection.updateOne(filter, update, updateOptions);
 
         insertUpdateResultProperties(metric, retVal);
 
@@ -1046,6 +2238,153 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
         return retVal;
     }
 
+    
+	@Override
+	public UpdateResult updateOne(ClientSession clientSession, Bson filter, Bson update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(clientSession, filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateOne(ClientSession clientSession, Bson filter, Bson update, UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(clientSession, filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateOne(Bson filter, List<? extends Bson> update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateOne(Bson filter, List<? extends Bson> update, UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateOne(ClientSession clientSession, Bson filter, List<? extends Bson> update) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(clientSession, filter, update);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+
+	@Override
+	public UpdateResult updateOne(ClientSession clientSession, Bson filter, List<? extends Bson> update,
+			UpdateOptions updateOptions) {
+        int writeSize = 0;
+        OperationMetric metric = null;
+        if (MongoLogger.GATHERER.isEnabled())
+        {
+            List<String> keyValuePairs = MongoUtilities.getKeyValuePairs(filter);
+            keyValuePairs.add("update");
+            keyValuePairs.add(update.toString());
+            String operationName = "Mongo : " + getNamespace().getCollectionName() + " : updateOne : " +
+                MongoUtilities.filterParameters(filter);
+            metric = startMetric(operationName, keyValuePairs);
+            addWriteConcern(metric);
+        }
+
+        UpdateResult retVal = collection.updateOne(clientSession, filter, update, updateOptions);
+
+        insertUpdateResultProperties(metric, retVal);
+
+        stopMetric(metric, writeSize);
+
+        return retVal;
+	}
+    
+    
     @Override
     public MongoCollection<TDocument> withCodecRegistry(CodecRegistry arg0)
     {
@@ -1095,4 +2434,49 @@ public class ProfiledMongoCollection<TDocument> implements MongoCollection<TDocu
             metric.setProperty(MongoProperties.MONGO_WRITE_CONCERN, getWriteConcern().asDocument().toJson());
         }
     }
+
+
+
+	@Override
+	public ChangeStreamIterable<TDocument> watch() {
+		return collection.watch();
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(Class<TResult> resultClass) {
+		return collection.watch(resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<TDocument> watch(List<? extends Bson> pipeline) {
+		return collection.watch(pipeline);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(List<? extends Bson> pipeline, Class<TResult> resultClass) {
+		return collection.watch(pipeline, resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<TDocument> watch(ClientSession clientSession) {
+		return collection.watch(clientSession);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(ClientSession clientSession, Class<TResult> resultClass) {
+		return collection.watch(clientSession, resultClass);
+	}
+
+	@Override
+	public ChangeStreamIterable<TDocument> watch(ClientSession clientSession, List<? extends Bson> pipeline) {
+		return collection.watch(clientSession, pipeline);
+	}
+
+	@Override
+	public <TResult> ChangeStreamIterable<TResult> watch(ClientSession clientSession, List<? extends Bson> pipeline,
+			Class<TResult> resultClass) {
+		return collection.watch(clientSession, pipeline, resultClass);
+	}
+
+
 }

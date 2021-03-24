@@ -25,7 +25,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoDriverInformation;
+import com.mongodb.MongoDriverInformation;
 
 /**
  * ProfiledOverrideMongoClient
@@ -86,12 +86,12 @@ public class ProfiledOverrideMongoClient extends MongoClient
      * Creates a Mongo instance based on a (single) mongodb node and a list of credentials
      *
      * @param addr            the database address
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials     the credentials used to authenticate all connections
      * @see com.mongodb.ServerAddress
      * @since 2.11.0
      */
-    public ProfiledOverrideMongoClient(final ServerAddress addr, final List<MongoCredential> credentialsList) {
-        this(addr, credentialsList, new MongoClientOptions.Builder().build());
+    public ProfiledOverrideMongoClient(final ServerAddress addr, final MongoCredential credentials) {
+        this(addr, credentials, new MongoClientOptions.Builder().build());
     }
 
     /**
@@ -109,13 +109,13 @@ public class ProfiledOverrideMongoClient extends MongoClient
      * Creates a Mongo instance based on a (single) mongo node using a given ServerAddress and default options.
      *
      * @param addr            the database address
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials 	  the credentials used to authenticate all connections
      * @param options         default options
      * @see com.mongodb.ServerAddress
      * @since 2.11.0
      */
-    public ProfiledOverrideMongoClient(final ServerAddress addr, final List<MongoCredential> credentialsList, final MongoClientOptions options) {
-        super(addr, credentialsList, options);
+    public ProfiledOverrideMongoClient(final ServerAddress addr, final MongoCredential credentials, final MongoClientOptions options) {
+    	super(addr, credentials, options);
     }
 
     /**
@@ -149,12 +149,12 @@ public class ProfiledOverrideMongoClient extends MongoClient
      *
      * @param seeds Put as many servers as you can in the list and the system will figure out the rest.  This can either be a list of mongod
      *              servers in the same replica set or a list of mongos servers in the same sharded cluster.
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials the credentials used to authenticate all connections
      * @see MongoClientOptions#getLocalThreshold()
      * @since 2.11.0
      */
-    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final List<MongoCredential> credentialsList) {
-        this(seeds, credentialsList, new MongoClientOptions.Builder().build());
+    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final MongoCredential credentials) {
+        this(seeds, credentials, new MongoClientOptions.Builder().build());
     }
 
     /**
@@ -190,13 +190,13 @@ public class ProfiledOverrideMongoClient extends MongoClient
      *
      * @param seeds Put as many servers as you can in the list and the system will figure out the rest.  This can either be a list of mongod
      *              servers in the same replica set or a list of mongos servers in the same sharded cluster.
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials 	  the credentials used to authenticate all connections
      * @param options         the options
      * @see MongoClientOptions#getLocalThreshold()
      * @since 2.11.0
      */
-    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final List<MongoCredential> credentialsList, final MongoClientOptions options) {
-        super(seeds, credentialsList, options);
+    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final MongoCredential credentials, final MongoClientOptions options) {
+        super(seeds, credentials, options);
     }
 
     /**
@@ -230,15 +230,15 @@ public class ProfiledOverrideMongoClient extends MongoClient
      * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
      *
      * @param addr            the database address
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials the list of credentials used to authenticate all connections
      * @param options         default options
      * @param mongoDriverInformation any driver information to associate with the MongoClient
      * @see com.mongodb.ServerAddress
      * @since 3.4
      */
-    public ProfiledOverrideMongoClient(final ServerAddress addr, final List<MongoCredential> credentialsList, final MongoClientOptions options,
+    public ProfiledOverrideMongoClient(final ServerAddress addr, final MongoCredential credentials, final MongoClientOptions options,
                        final MongoDriverInformation mongoDriverInformation) {
-        super(addr, credentialsList, options, mongoDriverInformation);
+        super(addr, credentials, options, mongoDriverInformation);
     }
 
     /**
@@ -248,14 +248,14 @@ public class ProfiledOverrideMongoClient extends MongoClient
      *
      * @param seeds Put as many servers as you can in the list and the system will figure out the rest.  This can either be a list of mongod
      *              servers in the same replica set or a list of mongos servers in the same sharded cluster.
-     * @param credentialsList the list of credentials used to authenticate all connections
+     * @param credentials the credentials used to authenticate all connections
      * @param options         the options
      * @param mongoDriverInformation any driver information to associate with the MongoClient
      * @since 3.4
      */
-    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final List<MongoCredential> credentialsList, final MongoClientOptions options,
+    public ProfiledOverrideMongoClient(final List<ServerAddress> seeds, final MongoCredential credentials, final MongoClientOptions options,
                        final MongoDriverInformation mongoDriverInformation) {
-        super(seeds, credentialsList, options, mongoDriverInformation);
+        super(seeds, credentials, options, mongoDriverInformation);
     }
 
     /**

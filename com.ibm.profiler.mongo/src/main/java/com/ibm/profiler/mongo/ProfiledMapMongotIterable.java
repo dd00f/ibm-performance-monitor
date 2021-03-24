@@ -18,11 +18,11 @@ package com.ibm.profiler.mongo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.ibm.commerce.cache.CommonMetricProperties;
 import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.service.detailed.MongoLogger;
-import com.mongodb.Block;
 import com.mongodb.Function;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
@@ -61,7 +61,7 @@ public class ProfiledMapMongotIterable<TDocument, TResult, U> implements MongoIt
     @Override
     public MongoCursor<U> iterator()
     {
-        ProfiledMongoCursor<TDocument, U> profiledMongoCursor = new ProfiledMongoCursor<TDocument, U>(this);
+        ProfiledMongoCursor<U> profiledMongoCursor = new ProfiledMongoCursor<U>(this);
         profiledMongoCursor.start(mongoIterable.iterator());
         return profiledMongoCursor;
     }
@@ -89,7 +89,7 @@ public class ProfiledMapMongotIterable<TDocument, TResult, U> implements MongoIt
     }
 
     @Override
-    public void forEach(Block<? super U> block)
+    public void forEach(Consumer<? super U> block)
     {
         OperationMetric metric = startMetric("forEach " + block.getClass().getName(), null);
         mongoIterable.forEach(block);
@@ -184,5 +184,12 @@ public class ProfiledMapMongotIterable<TDocument, TResult, U> implements MongoIt
     {
         return mongoIterable;
     }
+
+	@Override
+	public MongoCursor<U> cursor() {
+        ProfiledMongoCursor<U> profiledMongoCursor = new ProfiledMongoCursor<U>(this);
+        profiledMongoCursor.start(mongoIterable.cursor());
+        return profiledMongoCursor;
+	}
 
 }

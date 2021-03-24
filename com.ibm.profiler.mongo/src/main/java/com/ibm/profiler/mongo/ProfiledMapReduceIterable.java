@@ -19,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 
 import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.service.detailed.MongoLogger;
-import com.mongodb.Block;
 import com.mongodb.Function;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MapReduceIterable;
@@ -79,7 +79,7 @@ public class ProfiledMapReduceIterable<TDocument, TResult> implements MapReduceI
     @Override
     public MongoCursor<TResult> iterator()
     {
-        ProfiledMongoCursor<TResult, TResult> profiledMongoCursor = new ProfiledMongoCursor<TResult, TResult>(this);
+        ProfiledMongoCursor<TResult> profiledMongoCursor = new ProfiledMongoCursor<TResult>(this);
         profiledMongoCursor.start(mapReduceIterable.iterator());
         return profiledMongoCursor;
     }
@@ -107,7 +107,7 @@ public class ProfiledMapReduceIterable<TDocument, TResult> implements MapReduceI
     }
 
     @Override
-    public void forEach(Block<? super TResult> block)
+    public void forEach(Consumer<? super TResult> block)
     {
         OperationMetric metric = startMetric("forEach " + block.getClass().getName(), null);
         mapReduceIterable.forEach(block);
@@ -357,14 +357,16 @@ public class ProfiledMapReduceIterable<TDocument, TResult> implements MapReduceI
         return this;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public MapReduceIterable<TResult> sharded(boolean sharded)
     {
         mapReduceIterable.sharded(sharded);
         return this;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public MapReduceIterable<TResult> nonAtomic(boolean nonAtomic)
     {
         mapReduceIterable.nonAtomic(nonAtomic);
@@ -383,4 +385,11 @@ public class ProfiledMapReduceIterable<TDocument, TResult> implements MapReduceI
     {
         return mapReduceIterable;
     }
+
+	@Override
+	public MongoCursor<TResult> cursor() {
+        ProfiledMongoCursor<TResult> profiledMongoCursor = new ProfiledMongoCursor<TResult>(this);
+        profiledMongoCursor.start(mapReduceIterable.cursor());
+        return profiledMongoCursor;
+	}
 }

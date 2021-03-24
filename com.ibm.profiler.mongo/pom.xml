@@ -21,6 +21,7 @@
 		<apache.commons.lang.3.version>3.1</apache.commons.lang.3.version>
 		<javax.servlet.api.version>3.0-alpha-1</javax.servlet.api.version>
 		<org.aspectj.version>1.7.3</org.aspectj.version>
+		<mongodb.version>4.2.2</mongodb.version>
 	</properties>
 
 	<dependencies>
@@ -41,12 +42,13 @@
 			<artifactId>com.ibm.profiler.core</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<!-- mongoDB dependencies -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver</artifactId>
-			<version>3.4.2</version>
-			<scope>provided</scope>
+			<artifactId>mongodb-driver-legacy</artifactId>
+			<version>${mongodb.version}</version>
 		</dependency>
+
 	</dependencies>
 
 	<build>

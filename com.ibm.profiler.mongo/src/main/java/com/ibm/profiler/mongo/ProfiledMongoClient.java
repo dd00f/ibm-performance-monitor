@@ -15,14 +15,14 @@
  */
 package com.ibm.profiler.mongo;
 
-import java.util.List;
-
 import org.bson.Document;
 
+import com.mongodb.ClientSessionOptions;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientException;
 import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
 import com.mongodb.MongoNamespace;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
@@ -65,16 +65,6 @@ public class ProfiledMongoClient
     public MongoClientOptions getMongoClientOptions()
     {
         return client.getMongoClientOptions();
-    }
-
-    /**
-     * Gets the list of credentials that this client authenticates all connections with
-     *
-     * @return the list of credentials
-     */
-    public List<MongoCredential> getCredentialsList()
-    {
-        return client.getCredentialsList();
     }
 
     /**
@@ -123,12 +113,11 @@ public class ProfiledMongoClient
      */
     public MongoDatabase getDatabase(final String databaseName)
     {
-
         MongoDatabase database = client.getDatabase(databaseName);
         ProfiledMongoDatabase profiledDatabase = new ProfiledMongoDatabase(database);
         return profiledDatabase;
-
     }
+    
 
     /**
      * Closes all resources associated with this instance, in particular any open network connections. Once called, this
@@ -138,4 +127,29 @@ public class ProfiledMongoClient
     {
         client.close();
     }
+    
+    /**
+     * Creates a client session with default session options.
+     *
+     * @return the client session
+     * @throws MongoClientException if the MongoDB cluster to which this client is connected does not support sessions
+     * @mongodb.server.release 3.6
+     * @since 3.8
+     */
+    public ClientSession startSession() {
+        return client.startSession();
+    }
+
+    /**
+     * Creates a client session.
+     *
+     * @param options the options for the client session
+     * @return the client session
+     * @throws MongoClientException if the MongoDB cluster to which this client is connected does not support sessions
+     * @mongodb.server.release 3.6
+     * @since 3.6
+     */
+    public ClientSession startSession(final ClientSessionOptions options) {
+        return client.startSession(options);
+    }    
 }

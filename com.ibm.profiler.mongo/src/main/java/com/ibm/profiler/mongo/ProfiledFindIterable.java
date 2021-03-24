@@ -19,14 +19,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.bson.BsonDocument;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.ibm.commerce.cache.OperationMetric;
 import com.ibm.service.detailed.MongoLogger;
-import com.mongodb.Block;
 import com.mongodb.CursorType;
+import com.mongodb.ExplainVerbosity;
 import com.mongodb.Function;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
@@ -49,8 +51,6 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     private Bson filter;
 
     private int limit = -1;
-
-    private Bson modifiers;
 
     private int batchSize = -1;
 
@@ -79,7 +79,7 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     @Override
     public MongoCursor<TResult> iterator()
     {
-        ProfiledMongoCursor<TDocument, TResult> profiledMongoCursor = new ProfiledMongoCursor<TDocument, TResult>(this);
+        ProfiledMongoCursor<TResult> profiledMongoCursor = new ProfiledMongoCursor<TResult>(this);
         profiledMongoCursor.start(findIterable.iterator());
         return profiledMongoCursor;
     }
@@ -107,7 +107,7 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     }
 
     @Override
-    public void forEach(Block<? super TResult> block)
+    public void forEach(Consumer<? super TResult> block)
     {
         OperationMetric metric = startMetric("forEach " + block.getClass().getName(), null);
         findIterable.forEach(block);
@@ -159,14 +159,6 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     }
 
     @Override
-    public FindIterable<TResult> modifiers(Bson modifiers)
-    {
-        this.modifiers = modifiers;
-        findIterable.modifiers(modifiers);
-        return this;
-    }
-
-    @Override
     public FindIterable<TResult> projection(Bson projection)
     {
         this.projection = projection;
@@ -189,7 +181,8 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
         return this;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public FindIterable<TResult> oplogReplay(boolean oplogReplay)
     {
         findIterable.oplogReplay(oplogReplay);
@@ -240,11 +233,6 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     public int getLimit()
     {
         return limit;
-    }
-
-    public Bson getModifiers()
-    {
-        return modifiers;
     }
 
     public int getBatchSize()
@@ -307,13 +295,6 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
         {
             builder.append(" : Sort ");
             builder.append(sort.toString());
-        }
-
-        Bson modifiers = getModifiers();
-        if (modifiers != null)
-        {
-            builder.append(" : Modifiers ");
-            builder.append(modifiers.toString());
         }
 
         Bson projection = getProjection();
@@ -395,4 +376,80 @@ public class ProfiledFindIterable<TDocument, TResult> implements FindIterable<TR
     {
         return findIterable;
     }
+
+	@Override
+	public MongoCursor<TResult> cursor() {
+		
+        ProfiledMongoCursor<TResult> profiledMongoCursor = new ProfiledMongoCursor<TResult>(this);
+        profiledMongoCursor.start(findIterable.cursor());
+        return profiledMongoCursor;
+	}
+
+	@Override
+	public FindIterable<TResult> allowDiskUse(Boolean arg0) {
+		findIterable.allowDiskUse(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> comment(String arg0) {
+		findIterable.comment(arg0);
+		return this;
+	}
+
+	@Override
+	public Document explain() {
+		return findIterable.explain();
+	}
+
+	@Override
+	public Document explain(ExplainVerbosity arg0) {
+		return findIterable.explain(arg0);
+	}
+
+	@Override
+	public <E> E explain(Class<E> arg0) {
+		return findIterable.explain(arg0);
+	}
+
+	@Override
+	public <E> E explain(Class<E> arg0, ExplainVerbosity arg1) {
+		return findIterable.explain(arg0, arg1);
+	}
+
+	@Override
+	public FindIterable<TResult> hint(Bson arg0) {
+		findIterable.hint(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> hintString(String arg0) {
+		findIterable.hintString(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> max(Bson arg0) {
+		findIterable.max(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> min(Bson arg0) {
+		findIterable.min(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> returnKey(boolean arg0) {
+		findIterable.returnKey(arg0);
+		return this;
+	}
+
+	@Override
+	public FindIterable<TResult> showRecordId(boolean arg0) {
+		findIterable.showRecordId(arg0);
+		return this;
+	}
 }
