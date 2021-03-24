@@ -17,7 +17,7 @@ package com.ibm.profiler.cassandra;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
