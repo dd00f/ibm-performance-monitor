@@ -139,7 +139,7 @@ public class ProfiledOverrideMongoClient extends MongoClient
     /**
      * <p>Creates an instance based on a list of replica set members or mongos servers. For a replica set it will discover all members.
      * For a list with a single seed, the driver will still discover all members of the replica set.  For a direct
-     * connection to a replica set member, with no discovery, use the {@link #ProfiledOverrideMongoClient(ServerAddress, List)}
+     * connection to a replica set member, with no discovery, use the {@link #ProfiledOverrideMongoClient(ServerAddress, MongoCredential)}
      * constructor instead.</p>
      *
      * <p>When there is more than one server to choose from based on the type of request (read or write) and the read preference (if it's a
@@ -180,7 +180,7 @@ public class ProfiledOverrideMongoClient extends MongoClient
     /**
      * <p>Creates an instance based on a list of replica set members or mongos servers. For a replica set it will discover all members.
      * For a list with a single seed, the driver will still discover all members of the replica set.  For a direct
-     * connection to a replica set member, with no discovery, use the {@link #ProfiledOverrideMongoClient(ServerAddress, List, MongoClientOptions)}
+     * connection to a replica set member, with no discovery, use the {@link #ProfiledOverrideMongoClient(ServerAddress, MongoCredential, MongoClientOptions)}
      * constructor instead.</p>
      *
      * <p>When there is more than one server to choose from based on the type of request (read or write) and the read preference (if it's a
