@@ -133,8 +133,6 @@ public class ProfiledMongoClient
      *
      * @return the client session
      * @throws MongoClientException if the MongoDB cluster to which this client is connected does not support sessions
-     * @mongodb.server.release 3.6
-     * @since 3.8
      */
     public ClientSession startSession() {
         return client.startSession();
@@ -146,8 +144,6 @@ public class ProfiledMongoClient
      * @param options the options for the client session
      * @return the client session
      * @throws MongoClientException if the MongoDB cluster to which this client is connected does not support sessions
-     * @mongodb.server.release 3.6
-     * @since 3.6
      */
     public ClientSession startSession(final ClientSessionOptions options) {
         return client.startSession(options);
