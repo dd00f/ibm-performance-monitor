@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.ibm.profiler</groupId>
 		<artifactId>com.ibm.profiler</artifactId>
-		<version>1.5.0.0</version>
+		<version>1.5.0.1</version>
 		<relativePath>../com.ibm.profiler</relativePath>
 	</parent>
 
@@ -92,9 +92,9 @@
 					</dependency>
 				</dependencies>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<complianceLevel>1.6</complianceLevel>
+					<source>${compiler.source.version}</source>
+					<target>${compiler.target.version}</target>
+					<complianceLevel>${compiler.target.version}</complianceLevel>
 					<forceAjcCompile>true</forceAjcCompile>
 				</configuration>
 			</plugin>
