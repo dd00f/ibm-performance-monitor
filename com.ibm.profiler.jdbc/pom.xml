@@ -20,7 +20,7 @@
 		<!-- 3rd Party Dependency Version Properties -->
 		<com.ibm.db2.db2jcc.version>10.1</com.ibm.db2.db2jcc.version>
 		<com.oracle.ojdbc6.version>11.1.0.6.0</com.oracle.ojdbc6.version>
-		<org.apache.derby.version>10.14.2.0</org.apache.derby.version>
+		<org.apache.derby.version>10.17.1.0</org.apache.derby.version>
 	</properties>
 
 	<dependencies>
